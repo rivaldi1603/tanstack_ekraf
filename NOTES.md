@@ -111,10 +111,13 @@ security.
 | Non-admin `fetch` to `createProduct` | `Forbidden: admin required` (403) |
 | Sign out from the sidebar | redirects to `/login` with clean session invalidation |
 | Aurora Mesh Gradients | Verified across `/`, `/login`, `/dashboard`, `/products`, and `/users` in both light & dark themes with frosted glass cards |
+| EKRAF Indonesian Copy & Button Contrast | Validated: authentic Indonesian copy for Ekonomi Kreatif (EKRAF), high-contrast white text on glowing aurora buttons (hero and header) |
 
-## Visual Design Overhaul: Aurora Mesh Gradients
+## Visual Design Overhaul: Aurora Mesh Gradients & EKRAF Branding
 
-The application UI features a state-of-the-art Aurora / Mesh Gradient design system:
+The application UI features a state-of-the-art Aurora / Mesh Gradient design system tailored for **Ekonomi Kreatif (EKRAF)**:
+- **Authentic EKRAF Indonesian Context**: Landing page and navigation copy redesigned specifically for Indonesia's creative economy ecosystem (kriya, fesyen, kuliner, desain, dan seni kreatif) with clear call-to-actions ("Masuk ke Akun", "Buka Dashboard", "Inisialisasi Data Demo").
+- **High-Contrast Button Architecture**: Re-scoped global `a` tag styling to `@layer base` (`a:where(:not([class]))`), eliminating the unlayered specificity conflict where anchor elements were forcing text to dark teal. Buttons now reliably render vibrant, pure white typography (`!text-white font-semibold`) with glowing aurora gradients in both the hero and top header.
 - **Animated 5-stop Radial Mesh Canvas**: `body` renders vibrant, ambient radial gradients (teal `#14b8a6`, cyan `#06b6d4`, emerald `#10b981`, indigo `#6366f1`, violet `#8b5cf6`) with smooth slow-motion keyframe oscillation (`aurora-mesh-flow`) and high-tech stardust noise (`body::after`).
 - **Frosted Glassmorphism**: Cards (`<Card>`), modals, the sidebar (`DashboardShell`), and header utilize translucent background tokens (`bg-card/80`, `bg-background/60`) paired with hardware-accelerated backdrop blur (`backdrop-blur-md`, `backdrop-blur-xl`) and subtle glowing borders (`border-border/70`).
 - **Aurora Gradient Text & Badges**: Distinctive multi-tone gradient typography (`.aurora-gradient-text`) and glowing badges (`variant="aurora"`, `.aurora-glow-pill`) provide clear visual hierarchy.
