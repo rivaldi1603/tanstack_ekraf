@@ -10,6 +10,7 @@ import {
 	RefreshCwIcon,
 	ShieldCheckIcon,
 	TriangleAlertIcon,
+	UserIcon,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -17,7 +18,12 @@ import PublicLayout from "@/components/PublicLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD } from "@/lib/demo-credentials";
+import {
+	SEED_ADMIN_EMAIL,
+	SEED_ADMIN_PASSWORD,
+	SEED_USER_EMAIL,
+	SEED_USER_PASSWORD,
+} from "@/lib/demo-credentials";
 import { seedAdmin } from "@/lib/server/auth";
 import type { SeedResult } from "@/lib/server/auth";
 
@@ -162,31 +168,48 @@ function SetupPage() {
 									<CardTitle className="flex items-center justify-between gap-2">
 										<span className="flex items-center gap-2">
 											<ShieldCheckIcon className="size-4 text-[color:var(--palm)]" />
-											Demo credentials
+											Demo accounts
 										</span>
 										<Badge variant="muted">Development only</Badge>
 									</CardTitle>
 									<CardDescription>
-										Public demo values — never reuse them in production.
+										Use these seeded accounts to test both administrator and regular user roles.
 									</CardDescription>
 								</CardHeader>
-								<CardContent className="space-y-3">
-									<div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-3">
-										<MailIcon className="size-4 shrink-0 text-muted-foreground" />
-										<div className="min-w-0">
-											<p className="text-xs text-muted-foreground">Email</p>
-											<p className="truncate text-sm font-medium text-foreground">
-												{SEED_ADMIN_EMAIL}
-											</p>
+								<CardContent className="space-y-4">
+									<div className="space-y-2 rounded-xl border border-border bg-muted/40 p-3">
+										<div className="flex items-center justify-between">
+											<span className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+												<ShieldCheckIcon className="size-3.5 text-[color:var(--palm)]" />
+												Administrator (Full Access)
+											</span>
+											<Badge variant="default">Admin</Badge>
+										</div>
+										<div className="flex items-center gap-2 text-xs text-muted-foreground">
+											<MailIcon className="size-3.5 shrink-0" />
+											<span className="font-mono text-foreground">{SEED_ADMIN_EMAIL}</span>
+										</div>
+										<div className="flex items-center gap-2 text-xs text-muted-foreground">
+											<KeyRoundIcon className="size-3.5 shrink-0" />
+											<span className="font-mono text-foreground">{SEED_ADMIN_PASSWORD}</span>
 										</div>
 									</div>
-									<div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-3">
-										<KeyRoundIcon className="size-4 shrink-0 text-muted-foreground" />
-										<div className="min-w-0">
-											<p className="text-xs text-muted-foreground">Password</p>
-											<p className="truncate text-sm font-medium text-foreground">
-												{SEED_ADMIN_PASSWORD}
-											</p>
+
+									<div className="space-y-2 rounded-xl border border-border bg-muted/40 p-3">
+										<div className="flex items-center justify-between">
+											<span className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+												<UserIcon className="size-3.5 text-[color:var(--lagoon-deep)]" />
+												Standard Member (Read-only)
+											</span>
+											<Badge variant="muted">User</Badge>
+										</div>
+										<div className="flex items-center gap-2 text-xs text-muted-foreground">
+											<MailIcon className="size-3.5 shrink-0" />
+											<span className="font-mono text-foreground">{SEED_USER_EMAIL}</span>
+										</div>
+										<div className="flex items-center gap-2 text-xs text-muted-foreground">
+											<KeyRoundIcon className="size-3.5 shrink-0" />
+											<span className="font-mono text-foreground">{SEED_USER_PASSWORD}</span>
 										</div>
 									</div>
 								</CardContent>

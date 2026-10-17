@@ -6,6 +6,8 @@ import {
 	type Role,
 	SEED_ADMIN_EMAIL,
 	SEED_ADMIN_PASSWORD,
+	SEED_USER_EMAIL,
+	SEED_USER_PASSWORD,
 	db,
 	getUserRole,
 	recordAuditLog,
@@ -136,6 +138,30 @@ async function runSeed(): Promise<SeedResult> {
 
 	setUserRole(adminUser.id, "admin");
 
+	let standardUser = db.user.find((u) => u.email === SEED_USER_EMAIL);
+	if (!standardUser) {
+		try {
+			await auth.api.signUpEmail({
+				body: {
+					email: SEED_USER_EMAIL,
+					password: SEED_USER_PASSWORD,
+					name: "Standard Member",
+				},
+				headers: new Headers(),
+			});
+			standardUser = db.user.find((u) => u.email === SEED_USER_EMAIL);
+			if (standardUser) {
+				setUserRole(standardUser.id, "user");
+			}
+		} catch {
+			// Pre-existing or concurrent seed
+			standardUser = db.user.find((u) => u.email === SEED_USER_EMAIL);
+			if (standardUser) {
+				setUserRole(standardUser.id, "user");
+			}
+		}
+	}
+
 	if (db.product.length === 0) {
 		seedSampleProducts();
 	}
@@ -144,7 +170,7 @@ async function runSeed(): Promise<SeedResult> {
 		action: "ADMIN_SEEDED",
 		actorEmail: SEED_ADMIN_EMAIL,
 		actorRole: "admin",
-		details: "Seeded initial administrator account and sample products",
+		details: "Seeded initial administrator and standard member accounts and sample products",
 	});
 
 	return {
@@ -152,7 +178,7 @@ async function runSeed(): Promise<SeedResult> {
 		alreadySeeded: false,
 		admin: SEED_ADMIN_EMAIL,
 		productCount: db.product.length,
-		message: "Administrator account and sample products created.",
+		message: "Administrator account, standard user account, and sample products created.",
 	};
 }
 

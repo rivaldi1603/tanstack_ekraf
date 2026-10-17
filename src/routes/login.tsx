@@ -17,7 +17,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
-import { SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD } from "@/lib/demo-credentials";
+import {
+	SEED_ADMIN_EMAIL,
+	SEED_ADMIN_PASSWORD,
+	SEED_USER_EMAIL,
+	SEED_USER_PASSWORD,
+} from "@/lib/demo-credentials";
 import { getServerSession } from "@/lib/server/auth";
 
 export const Route = createFileRoute("/login")({
@@ -107,6 +112,13 @@ function LoginPage() {
 		setMode("signin");
 		setEmail(SEED_ADMIN_EMAIL);
 		setPassword(SEED_ADMIN_PASSWORD);
+		setError("");
+	};
+
+	const quickFillUser = () => {
+		setMode("signin");
+		setEmail(SEED_USER_EMAIL);
+		setPassword(SEED_USER_PASSWORD);
 		setError("");
 	};
 
@@ -233,13 +245,23 @@ function LoginPage() {
 							<div className="flex items-center justify-between">
 								<Label htmlFor="login-password">Password</Label>
 								{mode === "signin" && (
-									<button
-										type="button"
-										onClick={quickFillAdmin}
-										className="text-xs font-semibold text-[color:var(--lagoon-deep)] hover:underline"
-									>
-										Quick fill admin demo
-									</button>
+									<div className="flex items-center gap-1.5 text-xs">
+										<button
+											type="button"
+											onClick={quickFillAdmin}
+											className="font-semibold text-[color:var(--lagoon-deep)] hover:underline"
+										>
+											Admin
+										</button>
+										<span className="text-muted-foreground">•</span>
+										<button
+											type="button"
+											onClick={quickFillUser}
+											className="font-semibold text-[color:var(--palm)] hover:underline"
+										>
+											User demo
+										</button>
+									</div>
 								)}
 							</div>
 							<div className="relative">
@@ -317,9 +339,26 @@ function LoginPage() {
 					</form>
 
 					<div className="mt-5 flex flex-col items-center gap-2 text-center text-xs text-muted-foreground">
-						<Badge variant="muted">Demo: admin@example.com / admin12345</Badge>
+						<div className="flex flex-wrap items-center justify-center gap-2">
+							<button
+								type="button"
+								onClick={quickFillAdmin}
+								className="cursor-pointer transition hover:opacity-80"
+								title="Fill admin@example.com / admin12345"
+							>
+								<Badge variant="muted">Admin: admin@example.com</Badge>
+							</button>
+							<button
+								type="button"
+								onClick={quickFillUser}
+								className="cursor-pointer transition hover:opacity-80"
+								title="Fill user@example.com / user12345"
+							>
+								<Badge variant="muted">User: user@example.com</Badge>
+							</button>
+						</div>
 						<p>
-							Need the admin account?{" "}
+							Need demo accounts?{" "}
 							<Link
 								to="/setup"
 								className="font-semibold text-[color:var(--lagoon-deep)] no-underline hover:underline"

@@ -82,7 +82,12 @@ export function recordAuditLog(entry: Omit<AuditLog, "id" | "timestamp">) {
 	}
 }
 
-export { SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD } from "./demo-credentials";
+export {
+	SEED_ADMIN_EMAIL,
+	SEED_ADMIN_PASSWORD,
+	SEED_USER_EMAIL,
+	SEED_USER_PASSWORD,
+} from "./demo-credentials";
 
 export function getUserRole(userId: string): Role {
 	return db.userRole.find((r) => r.userId === userId)?.role ?? "user";
