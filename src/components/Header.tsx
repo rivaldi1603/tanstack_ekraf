@@ -5,10 +5,10 @@ import BetterAuthHeader from "../integrations/better-auth/header-user.tsx";
 import ThemeToggle from "./ThemeToggle";
 
 const NAV_LINKS = [
-	{ to: "/", label: "Home" },
+	{ to: "/", label: "Beranda" },
 	{ to: "/dashboard", label: "Dashboard" },
-	{ to: "/products", label: "Products" },
-	{ to: "/users", label: "Users" },
+	{ to: "/products", label: "Produk" },
+	{ to: "/users", label: "Pengguna" },
 	{ to: "/setup", label: "Setup" },
 ] as const;
 

@@ -2,11 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { SparklesIcon } from "lucide-react";
 
 const FOOTER_LINKS = [
-	{ to: "/", label: "Home" },
+	{ to: "/", label: "Beranda" },
 	{ to: "/dashboard", label: "Dashboard" },
-	{ to: "/products", label: "Products" },
+	{ to: "/products", label: "Katalog Produk" },
 	{ to: "/setup", label: "Setup" },
-	{ to: "/login", label: "Sign in" },
+	{ to: "/login", label: "Masuk" },
 ] as const;
 
 export default function Footer() {
@@ -21,8 +21,8 @@ export default function Footer() {
 						Ekraf Admin Dashboard
 					</div>
 					<p className="mt-2 text-sm leading-6">
-						Secure product and user administration for creative economy teams, built with TanStack
-						Start and Better Auth.
+						Platform administrasi terpadu, kurasi karya, dan tata kelola tim industri ekonomi
+						kreatif Indonesia.
 					</p>
 				</div>
 

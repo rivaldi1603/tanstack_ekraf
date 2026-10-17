@@ -238,15 +238,20 @@ body::after {
 	}
 }
 
-a {
-	color: var(--lagoon-deep);
-	text-decoration-color: rgba(20, 184, 166, 0.4);
-	text-decoration-thickness: 1px;
-	text-underline-offset: 2px;
-}
-
-a:hover {
-	color: #0f766e;
+@layer base {
+	a {
+		color: inherit;
+		text-decoration: inherit;
+	}
+	a:where(:not([class])) {
+		color: var(--lagoon-deep);
+		text-decoration: underline;
+		text-decoration-color: rgba(20, 184, 166, 0.4);
+		text-underline-offset: 2px;
+	}
+	a:where(:not([class])):hover {
+		color: #0f766e;
+	}
 }
 
 code {

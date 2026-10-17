@@ -1,5 +1,5 @@
 import { Link, useRouter } from "@tanstack/react-router";
-import { LogOutIcon } from "lucide-react";
+import { LogInIcon, LogOutIcon } from "lucide-react";
 import { authClient } from "#/lib/auth-client";
 import { getUserInitials } from "#/lib/types";
 
@@ -33,10 +33,10 @@ export default function BetterAuthHeader() {
 						await authClient.signOut();
 						await router.invalidate();
 					}}
-					className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border bg-background px-3 text-sm font-medium text-foreground transition hover:bg-accent"
+					className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border bg-background px-3 text-sm font-medium text-foreground transition hover:bg-accent cursor-pointer"
 				>
 					<LogOutIcon className="size-4" />
-					<span className="hidden sm:inline">Sign out</span>
+					<span className="hidden sm:inline">Keluar</span>
 				</button>
 			</div>
 		);
@@ -45,9 +45,10 @@ export default function BetterAuthHeader() {
 	return (
 		<Link
 			to="/login"
-			className="inline-flex h-9 items-center rounded-xl bg-[color:var(--sea-ink)] px-4 text-sm font-semibold text-[color:var(--foam)] no-underline transition hover:opacity-90"
+			className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 px-4 text-sm font-semibold !text-white shadow-[0_0_14px_rgba(20,184,166,0.35)] hover:opacity-95 no-underline transition-all active:scale-[0.98]"
 		>
-			Sign in
+			<LogInIcon className="size-3.5 !text-white" />
+			<span className="!text-white font-semibold">Masuk</span>
 		</Link>
 	);
 }

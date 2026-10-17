@@ -22,23 +22,23 @@ export const Route = createFileRoute("/")({
 
 const FEATURES = [
 	{
-		title: "Server-verified sessions",
-		description: "Every write re-checks your session and role on the server.",
+		title: "Validasi Sesi Tingkat Server",
+		description: "Setiap penulisan dan perubahan data diverifikasi langsung pada server.",
 		icon: ShieldCheckIcon,
 	},
 	{
-		title: "Product catalogue",
-		description: "Create, edit and delete products with image uploads.",
+		title: "Katalog Produk Ekonomi Kreatif",
+		description: "Kurasi karya, visual resolusi tinggi, inventaris stok, dan varian harga.",
 		icon: PackageIcon,
 	},
 	{
-		title: "Role management",
-		description: "Promote admins and keep at least one account in control.",
+		title: "Manajemen Peran & Kolaborator",
+		description: "Pengaturan terpadu untuk Administrator dan Anggota tim kreatif.",
 		icon: UsersIcon,
 	},
 	{
-		title: "Fast data tables",
-		description: "Sortable TanStack Table views that work on mobile too.",
+		title: "Tabel Data Berkecepatan Tinggi",
+		description: "Penyortiran cepat & responsif di layar ponsel maupun komputer.",
 		icon: ZapIcon,
 	},
 ];
@@ -46,34 +46,34 @@ const FEATURES = [
 const QUICK_ACTIONS = [
 	{
 		to: "/dashboard",
-		label: "Dashboard",
-		description: "KPI overview and recent activity",
+		label: "Dashboard Ekraf",
+		description: "Ringkasan KPI, nilai inventaris, dan audit sistem",
 		icon: LayoutDashboardIcon,
 	},
 	{
 		to: "/products",
-		label: "Products",
-		description: "Manage your catalogue",
+		label: "Katalog Produk",
+		description: "Kelola kurasi karya dan inventaris produk kreatif",
 		icon: PackageIcon,
 	},
 	{
 		to: "/users",
-		label: "Users",
-		description: "Roles and accounts (admin)",
+		label: "Kelola Pengguna",
+		description: "Hak akses, kolaborator, dan peran administrator",
 		icon: UsersIcon,
 	},
 	{
 		to: "/setup",
-		label: "Setup",
-		description: "Seed the demo admin account",
+		label: "Inisialisasi Demo",
+		description: "Seed akun Administrator dan Anggota demo",
 		icon: DatabaseIcon,
 	},
 ] as const;
 
 const STEPS = [
-	"Open the Setup page and seed the administrator account.",
-	"Sign in with the demo credentials (admin@example.com / admin12345).",
-	"Add products with images, then invite and promote your team.",
+	"Kunjungi halaman Setup lalu klik Seed Akun Demo untuk menyiapkan data awal.",
+	"Masuk dengan akun demo: Administrator (admin@example.com) atau Anggota (user@example.com).",
+	"Kelola katalog karya ekonomi kreatif, perbarui profil, atau atur peran tim kolaborator.",
 ] as const;
 
 function HomePage() {
@@ -86,15 +86,16 @@ function HomePage() {
 					<div className="rise-in">
 						<Badge variant="aurora" className="mb-4">
 							<SparklesIcon />
-							Ekraf creative economy admin
+							Platform Digital Ekonomi Kreatif (EKRAF)
 						</Badge>
 						<h1 className="display-title text-4xl leading-[1.1] font-bold text-foreground sm:text-5xl lg:text-6xl">
-							Run your catalogue and your team from one{" "}
-							<span className="aurora-gradient-text">clean dashboard</span>.
+							Kelola katalog karya & talenta kreatif dalam{" "}
+							<span className="aurora-gradient-text">satu dashboard terpadu</span>.
 						</h1>
 						<p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">
-							A secure admin workspace for creative economy products and people — built on TanStack
-							Start and Better Auth, with server-side validation on every action.
+							Pusat kendali dan administrasi digital bagi pelaku industri ekonomi kreatif Indonesia
+							— kurasi katalog produk kriya, fesyen, kuliner, desain, hingga manajemen peran tim
+							kolaborator dengan keamanan terproteksi di setiap tindakan.
 						</p>
 
 						<div className="mt-8 flex flex-wrap gap-3">
@@ -102,29 +103,43 @@ function HomePage() {
 								<Button
 									asChild
 									size="lg"
-									className="bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 text-white shadow-[0_0_24px_rgba(20,184,166,0.35)] hover:opacity-95 transition-all"
+									className="bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 !text-white font-semibold shadow-[0_0_24px_rgba(20,184,166,0.4)] hover:opacity-95 transition-all"
 								>
-									<Link to="/dashboard" className="no-underline">
-										Open dashboard
-										<ArrowRightIcon />
+									<Link
+										to="/dashboard"
+										className="inline-flex items-center gap-2 !text-white no-underline"
+									>
+										<span className="!text-white font-semibold">Buka Dashboard</span>
+										<ArrowRightIcon className="size-4 !text-white" />
 									</Link>
 								</Button>
 							) : (
 								<Button
 									asChild
 									size="lg"
-									className="bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 text-white shadow-[0_0_24px_rgba(20,184,166,0.35)] hover:opacity-95 transition-all"
+									className="bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 !text-white font-semibold shadow-[0_0_24px_rgba(20,184,166,0.4)] hover:opacity-95 transition-all"
 								>
-									<Link to="/login" className="no-underline">
-										Sign in
-										<ArrowRightIcon />
+									<Link
+										to="/login"
+										className="inline-flex items-center gap-2 !text-white no-underline"
+									>
+										<span className="!text-white font-semibold">Masuk ke Akun</span>
+										<ArrowRightIcon className="size-4 !text-white" />
 									</Link>
 								</Button>
 							)}
-							<Button asChild size="lg" variant="outline">
-								<Link to="/setup" className="no-underline">
-									<DatabaseIcon />
-									Seed demo data
+							<Button
+								asChild
+								size="lg"
+								variant="outline"
+								className="backdrop-blur-md bg-card/70 border-border/80 hover:bg-card/90"
+							>
+								<Link
+									to="/setup"
+									className="inline-flex items-center gap-2 no-underline text-foreground"
+								>
+									<DatabaseIcon className="size-4 text-teal-600 dark:text-teal-400" />
+									<span>Inisialisasi Data Demo</span>
 								</Link>
 							</Button>
 						</div>
@@ -149,16 +164,16 @@ function HomePage() {
 							<div className="flex items-center justify-between gap-3">
 								<CardTitle className="flex items-center gap-2">
 									<SparklesIcon className="size-4 text-[color:var(--lagoon-deep)]" />
-									Session status
+									Status Akses
 								</CardTitle>
 								<Badge variant={session?.user ? "success" : "muted"}>
-									{session?.user ? "Signed in" : "Guest"}
+									{session?.user ? "Terautentikasi" : "Tamu (Guest)"}
 								</Badge>
 							</div>
 							<CardDescription>
 								{session?.user
-									? "You have an active session on this device."
-									: "Sign in to unlock the dashboard, products and users."}
+									? "Anda memiliki sesi aktif pada perangkat ini."
+									: "Masuk untuk mengakses penuh dashboard ekraf, katalog karya, dan manajemen tim."}
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
@@ -176,14 +191,14 @@ function HomePage() {
 								</div>
 							) : (
 								<div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-									No active session. Use the setup page to create the demo administrator, then sign
-									in.
+									Belum ada sesi aktif. Gunakan halaman Setup untuk membuat akun demo, lalu masuk ke
+									sistem.
 								</div>
 							)}
 
 							<div className="space-y-2">
 								<p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-									Getting started
+									Panduan Singkat
 								</p>
 								<ol className="space-y-2">
 									{STEPS.map((step, index) => (
@@ -204,10 +219,10 @@ function HomePage() {
 			<section className="page-wrap px-4 py-14">
 				<div className="mb-6">
 					<h2 className="display-title text-2xl font-bold text-foreground sm:text-3xl">
-						Quick actions
+						Aksi Cepat
 					</h2>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Everything you need to manage the creative economy programme.
+						Akses instan ke seluruh modul operasional dan administrasi ekonomi kreatif.
 					</p>
 				</div>
 
