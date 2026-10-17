@@ -75,6 +75,13 @@ security.
 
 - **Role-aware UI on top of (not instead of) server enforcement.** Products and the dashboard hide *Add/Edit/Delete/New product* from non-admins and the users page renders an "Administrators only" panel, but every one of those actions is still re-checked by `requireAdmin()` on the server. Prevents *confusing dead-end 403s* without weakening the rule that authorisation is decided server-side.
 
+- **First-class Standard User experience & self-service profile.** The application now treats regular users as complete, first-class participants rather than just displaying locked screens:
+  - Both `admin@example.com` (Admin) and `user@example.com` (Standard Member) are seeded automatically via `/setup` with dedicated quick-fill buttons on `/login`.
+  - Regular users can browse the entire catalogue and inspect full product details, prices, stock statuses, and high-resolution images via `ProductDetailModal` on both desktop and mobile views.
+  - A dedicated `UserProfileModal` allows members to inspect their workspace permissions, view their account status, and safely update their display name via `updateCurrentUserProfile` (protected by `requireAuth()` with Zod and XSS sanitization, and tracked in the audit log).
+  - Visiting `/users` as a regular user displays a clean administrative access notice alongside an informative "Your Account Profile" card with a direct link to edit their display name.
+  - The dashboard features tailored cards for members (Account Role: Member, read-only catalogue browsing actions) instead of showing empty placeholders.
+
 ## Known behaviour
 
 - The **first** `/setup` seed also establishes a session: `seedAdmin` calls Better Auth's
@@ -88,16 +95,21 @@ security.
 
 | Check | Result |
 |---|---|
-| `/setup` seed, then a second click | 3 products; second click is a no-op |
+| `/setup` seed, then a second click | Both admin and standard user created; 3 products; second click is an idempotent no-op |
+| Login with Admin demo | Lands on `/dashboard` with full CRUD, audit trail, and user management controls |
+| Login with Standard User demo | Lands on `/dashboard` displaying "Account Role: Member", read-only stats, and catalogue quick actions |
+| Standard User on `/products` | Desktop & mobile display "View details" button; opening `ProductDetailModal` renders high-res image and full specifications |
+| Standard User on `/users` | Displays administrator restriction banner alongside "Your Account Profile" card |
+| Edit display name via `UserProfileModal` | Name updates instantly across sidebar, header, and dashboard; audit log records `USER_PROFILE_UPDATED` |
 | Partly-filled product form | per-field errors: "Name is required", etc. |
 | Create product with an image URL | new row + thumbnail, modal closes |
 | Sign-in with a wrong password | inline "Incorrect email or password." |
 | Sign-in with the demo admin | lands on `/dashboard`, `document.cookie` is empty (httpOnly holds) |
 | 6 rapid failed logins | attempts 1–5 → 401, attempt 6 → 429 with the retry message |
 | Non-admin via `fetch` to the server-fn endpoint | `You cannot change your own role…` / `You cannot delete your own account.` — the UI blocks these, but the guard also fires when the request is hand-built |
-| Unauthenticated `fetch` to `updateUserRole` | `Unauthorized` |
-| `/users` as a non-admin | "Administrators only" panel; `getUsers` never called |
-| Sign out from the sidebar | redirects to `/login` |
+| Unauthenticated `fetch` to `updateUserRole` | `Unauthorized` (401) |
+| Non-admin `fetch` to `createProduct` | `Forbidden: admin required` (403) |
+| Sign out from the sidebar | redirects to `/login` with clean session invalidation |
 
 ## Verification
 
@@ -106,5 +118,6 @@ bunx tsr generate   # regenerated src/routeTree.gen.ts for the new route tree
 bun run format      # biome format --write
 bun run lint        # biome check → 0 errors, 0 warnings
 bun run build       # vite build → success
-bunx tsc --noEmit   # no type errors
+bunx tsc --noEmit   # 0 type errors
 ```
+
