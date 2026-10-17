@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { type Product, db } from "@/lib/db";
+import { type Product, db, recordAuditLog } from "@/lib/db";
 import { productSchema, productUpdateSchema } from "@/lib/product-schema";
 import { requireAdmin, requireAuth } from "@/lib/session";
 
@@ -15,7 +15,7 @@ export const getProducts = createServerFn({ method: "GET" }).handler(async () =>
 export const createProduct = createServerFn({ method: "POST" })
 	.validator(productSchema)
 	.handler(async ({ data }) => {
-		await requireAdmin();
+		const { user } = await requireAdmin();
 		const now = new Date().toISOString();
 		const product: Product = {
 			id: crypto.randomUUID(),
@@ -28,13 +28,19 @@ export const createProduct = createServerFn({ method: "POST" })
 			updatedAt: now,
 		};
 		db.product.push(product);
+		recordAuditLog({
+			action: "PRODUCT_CREATED",
+			actorEmail: user.email,
+			actorRole: "admin",
+			details: `Created product "${product.name}" ($${product.price}, ${product.stock} in stock)`,
+		});
 		return product;
 	});
 
 export const updateProduct = createServerFn({ method: "POST" })
 	.validator(productUpdateSchema)
 	.handler(async ({ data }) => {
-		await requireAdmin();
+		const { user } = await requireAdmin();
 		const index = db.product.findIndex((p) => p.id === data.id);
 		if (index === -1) {
 			const err = new Error("Product not found") as Error & { status?: number };
@@ -52,19 +58,32 @@ export const updateProduct = createServerFn({ method: "POST" })
 			updatedAt: now,
 		};
 		db.product[index] = updated;
+		recordAuditLog({
+			action: "PRODUCT_UPDATED",
+			actorEmail: user.email,
+			actorRole: "admin",
+			details: `Updated product "${updated.name}" ($${updated.price}, ${updated.stock} in stock)`,
+		});
 		return updated;
 	});
 
 export const deleteProduct = createServerFn({ method: "POST" })
 	.validator(z.object({ id: z.string().min(1, "Product id is required") }))
 	.handler(async ({ data }) => {
-		await requireAdmin();
+		const { user } = await requireAdmin();
 		const index = db.product.findIndex((p) => p.id === data.id);
 		if (index === -1) {
 			const err = new Error("Product not found") as Error & { status?: number };
 			err.status = 404;
 			throw err;
 		}
+		const removed = db.product[index];
 		db.product.splice(index, 1);
+		recordAuditLog({
+			action: "PRODUCT_DELETED",
+			actorEmail: user.email,
+			actorRole: "admin",
+			details: `Deleted product "${removed.name}"`,
+		});
 		return { ok: true };
 	});

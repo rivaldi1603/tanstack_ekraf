@@ -4,6 +4,7 @@ import {
 	createFileRoute,
 	redirect,
 	useNavigate,
+	useRouter,
 	useRouterState,
 } from "@tanstack/react-router";
 import { cn } from "cn";
@@ -52,6 +53,7 @@ const SIDEBAR_STORAGE_KEY = "ekraf:sidebar";
 function DashboardShell() {
 	const { viewer } = Route.useRouteContext();
 	const navigate = useNavigate();
+	const router = useRouter();
 	const pathname = useRouterState({ select: (state) => state.location.pathname });
 
 	const [collapsed, setCollapsed] = useState(false);
@@ -83,6 +85,7 @@ function DashboardShell() {
 		setSigningOut(true);
 		try {
 			await authClient.signOut();
+			await router.invalidate();
 			await navigate({ to: "/login", replace: true });
 		} finally {
 			setSigningOut(false);

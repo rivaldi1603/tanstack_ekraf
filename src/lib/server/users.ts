@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { db, getUserRole, removeUserRole, setUserRole } from "@/lib/db";
+import { db, getUserRole, recordAuditLog, removeUserRole, setUserRole } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
 
 export const userRoleSchema = z.object({
@@ -17,7 +17,8 @@ export const getUsers = createServerFn({ method: "GET" }).handler(async () => {
 		name: u.name,
 		role: getUserRole(u.id),
 		emailVerified: !!u.emailVerified,
-		createdAt: u.createdAt.toISOString(),
+		createdAt:
+			u.createdAt instanceof Date ? u.createdAt.toISOString() : new Date(u.createdAt).toISOString(),
 	}));
 });
 
@@ -48,7 +49,14 @@ export const updateUserRole = createServerFn({ method: "POST" })
 			}
 		}
 
+		const target = db.user.find((u) => u.id === data.userId);
 		setUserRole(data.userId, data.role);
+		recordAuditLog({
+			action: "USER_ROLE_UPDATED",
+			actorEmail: user.email,
+			actorRole: "admin",
+			details: `Changed role of user ${target?.email ?? data.userId} to "${data.role}"`,
+		});
 		return { ok: true };
 	});
 
@@ -79,7 +87,14 @@ export const deleteUser = createServerFn({ method: "POST" })
 			}
 		}
 
+		const target = db.user.find((u) => u.id === data.userId);
 		db.user = db.user.filter((u) => u.id !== data.userId);
 		removeUserRole(data.userId);
+		recordAuditLog({
+			action: "USER_DELETED",
+			actorEmail: user.email,
+			actorRole: "admin",
+			details: `Deleted user ${target?.email ?? data.userId}`,
+		});
 		return { ok: true };
 	});

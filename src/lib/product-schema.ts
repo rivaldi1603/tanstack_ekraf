@@ -23,16 +23,36 @@ const imageField = z
 	.transform((value) => (value === undefined || value === "" ? undefined : value));
 
 /**
+ * Strip raw HTML tags and non-printable characters to prevent stored XSS injection.
+ */
+export function sanitizeText(input: string): string {
+	const stripped = input.replace(/<[^>]*>/g, "");
+	return Array.from(stripped)
+		.filter((char) => {
+			const code = char.charCodeAt(0);
+			return code >= 32 || code === 10 || code === 13 || code === 9;
+		})
+		.join("")
+		.trim();
+}
+
+/**
  * Authoritative schema for product writes. Used by `createProduct` and
  * `updateProduct` server functions — never trust the client.
  */
 export const productSchema = z.object({
-	name: z.string().trim().min(1, "Name is required").max(100, "Name too long"),
+	name: z
+		.string()
+		.trim()
+		.transform(sanitizeText)
+		.refine((val) => val.length >= 1, { message: "Name is required" })
+		.pipe(z.string().max(100, "Name too long")),
 	description: z
 		.string()
 		.trim()
-		.min(1, "Description is required")
-		.max(1000, "Description too long"),
+		.transform(sanitizeText)
+		.refine((val) => val.length >= 1, { message: "Description is required" })
+		.pipe(z.string().max(1000, "Description too long")),
 	price: z.coerce.number().min(0, "Price must be >= 0").max(1_000_000_000, "Price is too large"),
 	stock: z.coerce
 		.number()
@@ -55,8 +75,12 @@ export const productUpdateSchema = z.object({
  * The server still re-validates everything with `productSchema`.
  */
 export const productFormSchema = z.object({
-	name: productSchema.shape.name,
-	description: productSchema.shape.description,
+	name: z.string().trim().min(1, "Name is required").max(100, "Name too long"),
+	description: z
+		.string()
+		.trim()
+		.min(1, "Description is required")
+		.max(1000, "Description too long"),
 	price: z
 		.string()
 		.trim()

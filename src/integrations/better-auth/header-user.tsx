@@ -1,9 +1,10 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { LogOutIcon } from "lucide-react";
 import { authClient } from "#/lib/auth-client";
 import { getUserInitials } from "#/lib/types";
 
 export default function BetterAuthHeader() {
+	const router = useRouter();
 	const { data: session, isPending } = authClient.useSession();
 
 	if (isPending) {
@@ -28,8 +29,9 @@ export default function BetterAuthHeader() {
 				</div>
 				<button
 					type="button"
-					onClick={() => {
-						void authClient.signOut();
+					onClick={async () => {
+						await authClient.signOut();
+						await router.invalidate();
 					}}
 					className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border bg-background px-3 text-sm font-medium text-foreground transition hover:bg-accent"
 				>

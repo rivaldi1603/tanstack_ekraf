@@ -1,4 +1,4 @@
-import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import {
 	ArrowLeftIcon,
 	EyeIcon,
@@ -45,8 +45,51 @@ function getErrorMessage(error: { status?: number; message?: string } | null): s
 	return message || "Authentication failed. Please try again.";
 }
 
+function getPasswordStrength(pwd: string): {
+	score: number;
+	label: string;
+	barColor: string;
+	textColor: string;
+} {
+	if (!pwd) return { score: 0, label: "", barColor: "", textColor: "" };
+	let score = 0;
+	if (pwd.length >= 8) score += 1;
+	if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score += 1;
+	if (/\d/.test(pwd)) score += 1;
+	if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+	switch (score) {
+		case 1:
+			return { score: 1, label: "Weak", barColor: "bg-destructive", textColor: "text-destructive" };
+		case 2:
+			return {
+				score: 2,
+				label: "Fair",
+				barColor: "bg-amber-500",
+				textColor: "text-amber-600 dark:text-amber-400",
+			};
+		case 3:
+			return {
+				score: 3,
+				label: "Good",
+				barColor: "bg-[color:var(--lagoon)]",
+				textColor: "text-[color:var(--lagoon-deep)]",
+			};
+		case 4:
+			return {
+				score: 4,
+				label: "Strong",
+				barColor: "bg-[color:var(--palm)]",
+				textColor: "text-[color:var(--palm)]",
+			};
+		default:
+			return { score: 1, label: "Weak", barColor: "bg-destructive", textColor: "text-destructive" };
+	}
+}
+
 function LoginPage() {
 	const navigate = useNavigate();
+	const router = useRouter();
 	const [mode, setMode] = useState<"signin" | "signup">("signin");
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
@@ -85,6 +128,7 @@ function LoginPage() {
 					return;
 				}
 			}
+			await router.invalidate();
 			await navigate({ to: "/dashboard" });
 		} catch {
 			setError("Something went wrong. Please check your connection and try again.");
@@ -224,6 +268,28 @@ function LoginPage() {
 									)}
 								</button>
 							</div>
+							{mode === "signup" && password.length > 0 && (
+								<div className="space-y-1.5 pt-1">
+									<div className="flex items-center justify-between text-xs">
+										<span className="text-muted-foreground">Password strength</span>
+										<span className={`font-semibold ${getPasswordStrength(password).textColor}`}>
+											{getPasswordStrength(password).label}
+										</span>
+									</div>
+									<div className="grid grid-cols-4 gap-1.5">
+										{[1, 2, 3, 4].map((step) => (
+											<div
+												key={step}
+												className={`h-1.5 rounded-full transition-all duration-300 ${
+													step <= getPasswordStrength(password).score
+														? getPasswordStrength(password).barColor
+														: "bg-muted"
+												}`}
+											/>
+										))}
+									</div>
+								</div>
+							)}
 							<p className="text-xs text-muted-foreground">
 								Password must be at least 8 characters.
 							</p>

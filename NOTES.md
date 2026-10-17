@@ -57,44 +57,23 @@ security.
   both operations. Prevents *self-inflicted privilege loss*, *account lockout* and an admin
   destroying the audit trail of their own actions.
 
-- **Login rate limiting.** `src/lib/rate-limit.ts` is a small sliding-window limiter (5
-  failed attempts per `IP::email` per 60 s) wired into `src/routes/api/auth/$.ts`, which
-  reads the submitted email from a cloned request body and returns `429 Too Many Requests`
-  with a `Retry-After` header and a human-readable message. Successful logins clear the
-  counter. Prevents *credential stuffing* and *brute-force password guessing*.
+- **Dual-tier login rate limiting.** `src/lib/rate-limit.ts` implements a two-bucket sliding window limiter: a targeted bucket (5 failed attempts per `IP::email` per 60 s) and a global network bucket (20 failed attempts per `IP` per 60 s) wired into `src/routes/api/auth/$.ts`. Successful logins clear the target counter. Prevents *credential stuffing*, *dictionary scanning*, and *brute-force password guessing* across multiple accounts from a single IP.
 
-- **Strict, server-side Zod validation for products.** `productSchema` trims and caps
-  `name` (1–100) and `description` (1–1000), coerces and bounds `price` (0–1e9) and `stock`
-  (integer, 0–1e6), and validates `image`. Numbers are coerced on the server, so a client
-  cannot submit `-1`, `NaN`, `1e12`, or a giant string. Prevents *negative/huge price or
-  stock injection*, *malformed records* and *resource exhaustion*.
+- **Strict, server-side Zod validation with XSS sanitization for products.** `productSchema` trims and strips HTML tags/control characters from `name` (1–100) and `description` (1–1000) via `sanitizeText`, coerces and bounds `price` (0–1e9) and `stock` (integer, 0–1e6), and validates `image`. Numbers are coerced on the server, so a client cannot submit `-1`, `NaN`, `1e12`, or a giant string. Prevents *stored XSS*, *negative/huge price or stock injection*, *malformed records* and *resource exhaustion*.
 
-- **Image validation with size and dimension limits (server and client).** `image` must be
-  an `https://` URL or a `data:image/(png|jpeg|webp|gif);base64,…` payload of at most 500 KB;
-  for PNG/JPEG the server decodes the header and rejects anything larger than 512×512 px.
-  The client reuses the exact same rules, and the upload flow auto-downscales oversize
-  files on a `<canvas>` before storing them. Prevents *multi-megabyte payload DoS*,
-  *memory exhaustion from huge base64 blobs*, and *stored malicious data URLs*
-  (only `https:` external images are accepted, so `javascript:`/`file:`/`http:` are out).
+- **Universal image dimension limits for PNG, JPEG, WebP, and GIF.** `src/lib/image.ts` parses binary file headers for PNG (IHDR), JPEG (SOF), WebP (VP8/VP8L/VP8X chunks), and GIF (GIF87a/89a) to strictly enforce the 512×512 px limit and 500 KB payload on the server. The client mirrors this check on uploads and URL inputs, auto-downscaling oversize images on a `<canvas>` before saving. Prevents *dimension limit bypass*, *multi-megabyte payload DoS*, *memory exhaustion*, and *stored malicious data URLs*.
 
-- **Hardened session cookies.** `src/lib/auth.ts` sets `httpOnly: true` (the browser JS can
-  never read the session cookie), `sameSite: "lax"` (blocks cross-site POSTs), `secure` and
-  `useSecureCookies` only in production (so the cookie never travels over plain HTTP), plus
-  a measured `expiresIn` of 7 days and `updateAge` of 1 day. Prevents *session theft via
-  XSS*, *CSRF*, and *session fixation/token leakage over HTTP*.
+- **Administrative mutation audit trail.** `src/lib/db.ts` and `src/lib/server/audit.ts` maintain an in-memory security audit log of every catalog mutation (`createProduct`, `updateProduct`, `deleteProduct`), role change (`updateUserRole`), user removal (`deleteUser`), and database seed (`seedAdmin`), with actor email, role, action, and timestamp. Displayed in real time on the admin dashboard. Provides *accountability, non-repudiation, and audit compliance*.
 
-- **No `dangerouslySetInnerHTML`.** The pre-paint theme bootstrap was previously injected as
-  a raw HTML string into a `<script>` tag; it is now a static, lint-clean file
-  (`public/theme-init.js`) referenced by `src/routes/__root.tsx`. Prevents *raw-HTML
-  injection / XSS* through
-  any future interpolation into that bootstrap string, and removes the Biome security
-  warning at the source instead of suppressing it.
+- **Interactive password strength meter and policy.** The registration card in `src/routes/login.tsx` computes password entropy (length, casing, digits, special characters) with real-time visual progress feedback (Weak, Fair, Good, Strong) to guide users toward resilient passphrases before account creation.
 
-- **Role-aware UI on top of (not instead of) server enforcement.** Products and the
-  dashboard hide *Add/Edit/Delete/New product* from non-admins and the users page renders
-  an "Administrators only" panel, but every one of those actions is still re-checked by
-  `requireAdmin()` on the server. Prevents *confusing dead-end 403s* without weakening the
-  rule that authorisation is decided server-side.
+- **Active router invalidation on auth transitions.** `login.tsx`, `header-user.tsx`, and `_admin.tsx` invoke `router.invalidate()` upon sign in, sign up, and sign out to guarantee all TanStack Router loaders and route context refresh synchronously without stale session cache.
+
+- **Hardened session cookies.** `src/lib/auth.ts` sets `httpOnly: true` (the browser JS can never read the session cookie), `sameSite: "lax"` (blocks cross-site POSTs), `secure` and `useSecureCookies` only in production (so the cookie never travels over plain HTTP), plus a measured `expiresIn` of 7 days and `updateAge` of 1 day. Prevents *session theft via XSS*, *CSRF*, and *session fixation/token leakage over HTTP*.
+
+- **No `dangerouslySetInnerHTML`.** The pre-paint theme bootstrap was previously injected as a raw HTML string into a `<script>` tag; it is now a static, lint-clean file (`public/theme-init.js`) referenced by `src/routes/__root.tsx`. Prevents *raw-HTML injection / XSS* through any future interpolation into that bootstrap string, and removes the Biome security warning at the source instead of suppressing it.
+
+- **Role-aware UI on top of (not instead of) server enforcement.** Products and the dashboard hide *Add/Edit/Delete/New product* from non-admins and the users page renders an "Administrators only" panel, but every one of those actions is still re-checked by `requireAdmin()` on the server. Prevents *confusing dead-end 403s* without weakening the rule that authorisation is decided server-side.
 
 ## Known behaviour
 

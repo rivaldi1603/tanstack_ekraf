@@ -158,6 +158,13 @@ export default function ProductFormModal({ open, product, onOpenChange }: Produc
 		defaultValues: emptyProductForm,
 		onSubmit: async ({ value }) => {
 			setSubmitError("");
+			const parsed = productFormSchema.safeParse(value);
+			if (!parsed.success) {
+				setSubmitError(
+					parsed.error.issues[0]?.message ?? "Please complete all required fields correctly.",
+				);
+				return;
+			}
 			const payload = toProductInput(value);
 			try {
 				if (product) {
@@ -210,6 +217,52 @@ export default function ProductFormModal({ open, product, onOpenChange }: Produc
 		}
 	};
 
+	const handleImageUrlBlur = async (url: string, onChange: (value: string) => void) => {
+		const trimmed = url.trim();
+		if (!trimmed) {
+			setImageStatus("");
+			setImageError("");
+			return;
+		}
+		if (!trimmed.startsWith("https://")) {
+			setImageError("Image URL must begin with https://");
+			return;
+		}
+		setImageError("");
+		setIsProcessingImage(true);
+		try {
+			const loaded = await loadImage(trimmed);
+			const dimensions: ImageDimensions = {
+				width: loaded.naturalWidth,
+				height: loaded.naturalHeight,
+			};
+			if (dimensions.width > MAX_IMAGE_DIMENSION || dimensions.height > MAX_IMAGE_DIMENSION) {
+				const scale = Math.min(
+					1,
+					MAX_IMAGE_DIMENSION / Math.max(dimensions.width, dimensions.height),
+				);
+				const canvas = document.createElement("canvas");
+				canvas.width = Math.round(dimensions.width * scale);
+				canvas.height = Math.round(dimensions.height * scale);
+				const ctx = canvas.getContext("2d");
+				if (ctx) {
+					ctx.drawImage(loaded, 0, 0, canvas.width, canvas.height);
+					const downscaled = canvas.toDataURL("image/webp", 0.9);
+					onChange(downscaled);
+					setImageStatus(
+						`${formatDimensions({ width: canvas.width, height: canvas.height })} • Auto-downscaled from URL (${formatDimensions(dimensions)})`,
+					);
+					return;
+				}
+			}
+			setImageStatus(`${formatDimensions(dimensions)} • Valid image URL`);
+		} catch {
+			setImageStatus("Image URL saved");
+		} finally {
+			setIsProcessingImage(false);
+		}
+	};
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-2xl">
@@ -235,6 +288,7 @@ export default function ProductFormModal({ open, product, onOpenChange }: Produc
 						name="name"
 						validators={{
 							onChange: ({ value }) => validateWith(productFormSchema.shape.name, value),
+							onBlur: ({ value }) => validateWith(productFormSchema.shape.name, value),
 						}}
 					>
 						{(field) => (
@@ -261,6 +315,7 @@ export default function ProductFormModal({ open, product, onOpenChange }: Produc
 						name="description"
 						validators={{
 							onChange: ({ value }) => validateWith(productFormSchema.shape.description, value),
+							onBlur: ({ value }) => validateWith(productFormSchema.shape.description, value),
 						}}
 					>
 						{(field) => (
@@ -289,6 +344,7 @@ export default function ProductFormModal({ open, product, onOpenChange }: Produc
 							name="price"
 							validators={{
 								onChange: ({ value }) => validateWith(productFormSchema.shape.price, value),
+								onBlur: ({ value }) => validateWith(productFormSchema.shape.price, value),
 							}}
 						>
 							{(field) => (
@@ -319,6 +375,7 @@ export default function ProductFormModal({ open, product, onOpenChange }: Produc
 							name="stock"
 							validators={{
 								onChange: ({ value }) => validateWith(productFormSchema.shape.stock, value),
+								onBlur: ({ value }) => validateWith(productFormSchema.shape.stock, value),
 							}}
 						>
 							{(field) => (
@@ -350,6 +407,7 @@ export default function ProductFormModal({ open, product, onOpenChange }: Produc
 						name="image"
 						validators={{
 							onChange: ({ value }) => validateWith(productFormSchema.shape.image, value),
+							onBlur: ({ value }) => validateWith(productFormSchema.shape.image, value),
 						}}
 					>
 						{(field) => {
@@ -408,7 +466,10 @@ export default function ProductFormModal({ open, product, onOpenChange }: Produc
 													setImageStatus("");
 													setImageError("");
 												}}
-												onBlur={field.handleBlur}
+												onBlur={() => {
+													field.handleBlur();
+													void handleImageUrlBlur(field.state.value ?? "", field.handleChange);
+												}}
 												placeholder="https://example.com/product.png"
 												aria-invalid={field.state.meta.errors.length > 0}
 											/>

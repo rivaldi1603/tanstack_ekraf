@@ -96,18 +96,89 @@ function readJpegDimensions(bytes: Uint8Array): ImageDimensions | null {
 	return null;
 }
 
-/** Read pixel dimensions straight out of PNG/JPEG headers. */
+function readGifDimensions(bytes: Uint8Array): ImageDimensions | null {
+	if (bytes.length < 10) return null;
+	if (
+		bytes[0] !== 0x47 ||
+		bytes[1] !== 0x49 ||
+		bytes[2] !== 0x46 ||
+		bytes[3] !== 0x38 ||
+		(bytes[4] !== 0x37 && bytes[4] !== 0x39) ||
+		bytes[5] !== 0x61
+	) {
+		return null;
+	}
+	const width = bytes[6] | (bytes[7] << 8);
+	const height = bytes[8] | (bytes[9] << 8);
+	return { width, height };
+}
+
+function readWebpDimensions(bytes: Uint8Array): ImageDimensions | null {
+	if (bytes.length < 30) return null;
+	if (
+		bytes[0] !== 0x52 ||
+		bytes[1] !== 0x49 ||
+		bytes[2] !== 0x46 ||
+		bytes[3] !== 0x46 ||
+		bytes[8] !== 0x57 ||
+		bytes[9] !== 0x45 ||
+		bytes[10] !== 0x42 ||
+		bytes[11] !== 0x50
+	) {
+		return null;
+	}
+
+	const chunkType = String.fromCharCode(bytes[12], bytes[13], bytes[14], bytes[15]);
+
+	if (chunkType === "VP8 ") {
+		if (bytes.length < 30) return null;
+		if (bytes[23] === 0x9d && bytes[24] === 0x01 && bytes[25] === 0x2a) {
+			const width = (bytes[26] | (bytes[27] << 8)) & 0x3fff;
+			const height = (bytes[28] | (bytes[29] << 8)) & 0x3fff;
+			return { width, height };
+		}
+	} else if (chunkType === "VP8L") {
+		if (bytes.length < 25 || bytes[20] !== 0x2f) return null;
+		const b0 = bytes[21];
+		const b1 = bytes[22];
+		const b2 = bytes[23];
+		const b3 = bytes[24];
+		const width = 1 + (((b1 & 0x3f) << 8) | b0);
+		const height = 1 + (((b3 & 0x0f) << 10) | (b2 << 2) | ((b1 & 0xc0) >> 6));
+		return { width, height };
+	} else if (chunkType === "VP8X") {
+		if (bytes.length < 30) return null;
+		const width = 1 + (bytes[24] | (bytes[25] << 8) | (bytes[26] << 16));
+		const height = 1 + (bytes[27] | (bytes[28] << 8) | (bytes[29] << 16));
+		return { width, height };
+	}
+
+	return null;
+}
+
+/** Read pixel dimensions straight out of PNG/JPEG/WebP/GIF headers. */
 export function readImageDimensions(
 	bytes: Uint8Array,
-	mime: "png" | "jpeg",
+	mime: "png" | "jpeg" | "webp" | "gif",
 ): ImageDimensions | null {
-	return mime === "png" ? readPngDimensions(bytes) : readJpegDimensions(bytes);
+	switch (mime) {
+		case "png":
+			return readPngDimensions(bytes);
+		case "jpeg":
+			return readJpegDimensions(bytes);
+		case "webp":
+			return readWebpDimensions(bytes);
+		case "gif":
+			return readGifDimensions(bytes);
+		default:
+			return null;
+	}
 }
 
 /**
  * Validate a stored image value: either an `https://` URL or a PNG/JPEG/WebP/GIF
- * data URL whose payload is at most 500KB. PNG/JPEG data URLs are additionally
- * checked against `MAX_IMAGE_DIMENSION` by reading the header dimensions.
+ * data URL whose payload is at most 500KB. Binary headers are decoded isomorphic-safe
+ * to enforce `MAX_IMAGE_DIMENSION` across all supported image formats.
  */
 export function validateImageValue(value: string): ImageValidationResult {
 	const trimmed = value.trim();
@@ -128,11 +199,10 @@ export function validateImageValue(value: string): ImageValidationResult {
 		return { ok: false, reason: "Image is larger than 500KB — please resize or compress it" };
 	}
 
-	if (mime === "png" || mime === "jpeg") {
-		const bytes = decodeBase64(base64);
-		if (!bytes) return { ok: false, reason: "Image data could not be decoded" };
-		const dimensions = readImageDimensions(bytes, mime);
-		if (!dimensions) return { ok: false, reason: "Could not read the image dimensions" };
+	const bytes = decodeBase64(base64);
+	if (!bytes) return { ok: false, reason: "Image data could not be decoded" };
+	const dimensions = readImageDimensions(bytes, mime);
+	if (dimensions) {
 		if (dimensions.width > MAX_IMAGE_DIMENSION || dimensions.height > MAX_IMAGE_DIMENSION) {
 			return {
 				ok: false,

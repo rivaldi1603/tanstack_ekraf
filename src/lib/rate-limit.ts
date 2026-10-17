@@ -10,6 +10,7 @@
 
 const WINDOW_MS = 60_000;
 const MAX_ATTEMPTS = 5;
+const MAX_IP_ATTEMPTS = 20;
 
 /** key -> timestamps (ms) of the failed attempts inside the current window. */
 const failures = new Map<string, number[]>();
@@ -32,13 +33,18 @@ export interface RateLimitResult {
 	allowed: boolean;
 	remaining: number;
 	retryAfterSeconds: number;
+	reason?: "account" | "ip";
 }
 
-/** Check whether `key` may attempt another login right now. */
-export function checkLoginRateLimit(key: string, now: number = Date.now()): RateLimitResult {
+/** Check whether `key` may attempt another login right now with given maxAttempts. */
+export function checkLoginRateLimit(
+	key: string,
+	maxAttempts: number = MAX_ATTEMPTS,
+	now: number = Date.now(),
+): RateLimitResult {
 	sweep(now);
 	const timestamps = (failures.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
-	if (timestamps.length >= MAX_ATTEMPTS) {
+	if (timestamps.length >= maxAttempts) {
 		const oldest = Math.min(...timestamps);
 		return {
 			allowed: false,
@@ -46,7 +52,35 @@ export function checkLoginRateLimit(key: string, now: number = Date.now()): Rate
 			retryAfterSeconds: Math.max(1, Math.ceil((WINDOW_MS - (now - oldest)) / 1000)),
 		};
 	}
-	return { allowed: true, remaining: MAX_ATTEMPTS - timestamps.length, retryAfterSeconds: 0 };
+	return { allowed: true, remaining: maxAttempts - timestamps.length, retryAfterSeconds: 0 };
+}
+
+/**
+ * Dual-tier check: protects both specific user accounts (max 5 fails / 60s per IP::email)
+ * and global IP addresses (max 20 fails / 60s per IP to prevent credential stuffing).
+ */
+export function checkDualLoginRateLimit(
+	ip: string,
+	email: string,
+	now: number = Date.now(),
+): RateLimitResult {
+	// First check overall IP limit
+	const ipLimit = checkLoginRateLimit(`ip:${ip}`, MAX_IP_ATTEMPTS, now);
+	if (!ipLimit.allowed) {
+		return { ...ipLimit, reason: "ip" };
+	}
+
+	// Then check specific targeted account limit
+	const targetLimit = checkLoginRateLimit(`target:${ip}::${email}`, MAX_ATTEMPTS, now);
+	if (!targetLimit.allowed) {
+		return { ...targetLimit, reason: "account" };
+	}
+
+	return {
+		allowed: true,
+		remaining: Math.min(ipLimit.remaining, targetLimit.remaining),
+		retryAfterSeconds: 0,
+	};
 }
 
 /** Record a failed attempt for `key`, starting/extending the window. */
@@ -57,9 +91,20 @@ export function recordLoginFailure(key: string, now: number = Date.now()) {
 	failures.set(key, timestamps);
 }
 
+/** Record failed attempt across both IP and IP::email buckets. */
+export function recordDualLoginFailure(ip: string, email: string, now: number = Date.now()) {
+	recordLoginFailure(`ip:${ip}`, now);
+	recordLoginFailure(`target:${ip}::${email}`, now);
+}
+
 /** Clear the failure history for `key` after a successful login. */
 export function clearLoginFailures(key: string) {
 	failures.delete(key);
+}
+
+/** Clear the failure history for an authenticated account. */
+export function clearDualLoginFailures(ip: string, email: string) {
+	clearLoginFailures(`target:${ip}::${email}`);
 }
 
 /** Derive a best-effort client identity from proxy headers. */

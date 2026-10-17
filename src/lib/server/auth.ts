@@ -8,6 +8,7 @@ import {
 	SEED_ADMIN_PASSWORD,
 	db,
 	getUserRole,
+	recordAuditLog,
 	setUserRole,
 } from "@/lib/db";
 import { getCurrentSession } from "@/lib/session";
@@ -138,6 +139,13 @@ async function runSeed(): Promise<SeedResult> {
 	if (db.product.length === 0) {
 		seedSampleProducts();
 	}
+
+	recordAuditLog({
+		action: "ADMIN_SEEDED",
+		actorEmail: SEED_ADMIN_EMAIL,
+		actorRole: "admin",
+		details: "Seeded initial administrator account and sample products",
+	});
 
 	return {
 		ok: true,

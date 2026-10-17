@@ -3,6 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import {
 	BoxesIcon,
 	DollarSignIcon,
+	HistoryIcon,
 	LockIcon,
 	PackageIcon,
 	PlusIcon,
@@ -18,6 +19,7 @@ import ProductThumbnail from "@/components/ProductThumbnail";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getAuditLogs } from "@/lib/server/audit";
 import { getProducts } from "@/lib/server/products";
 import { getUsers } from "@/lib/server/users";
 import { formatCurrency, getStockStatus } from "@/lib/types";
@@ -40,6 +42,11 @@ function DashboardPage() {
 	const usersQuery = useQuery({
 		queryKey: ["dashboard", "users"],
 		queryFn: async () => getUsers(),
+		enabled: isAdmin,
+	});
+	const auditQuery = useQuery({
+		queryKey: ["dashboard", "audit-logs"],
+		queryFn: async () => getAuditLogs(),
 		enabled: isAdmin,
 	});
 
@@ -259,6 +266,63 @@ function DashboardPage() {
 					</CardContent>
 				</Card>
 			</div>
+
+			{isAdmin && (
+				<Card>
+					<CardHeader className="flex-row items-center justify-between gap-3">
+						<div className="min-w-0">
+							<CardTitle className="flex items-center gap-2">
+								<HistoryIcon className="size-4 text-[color:var(--lagoon-deep)]" />
+								Admin Action Audit Log
+							</CardTitle>
+							<CardDescription>
+								Security audit trail of administrative operations and catalogue mutations.
+							</CardDescription>
+						</div>
+						<Badge variant="muted">In-memory audit trail</Badge>
+					</CardHeader>
+					<CardContent>
+						{auditQuery.isPending ? (
+							<div className="space-y-2">
+								<div className="h-4 w-48 animate-pulse rounded bg-muted" />
+								<div className="h-4 w-full animate-pulse rounded bg-muted" />
+							</div>
+						) : (auditQuery.data?.length ?? 0) === 0 ? (
+							<p className="text-xs text-muted-foreground">
+								No administrative actions recorded in this server session yet. Mutations will be
+								logged here in real time.
+							</p>
+						) : (
+							<div className="space-y-2.5">
+								{auditQuery.data?.slice(0, 6).map((log) => (
+									<div
+										key={log.id}
+										className="flex flex-col gap-1 rounded-xl border border-border bg-muted/30 p-3 text-xs sm:flex-row sm:items-center sm:justify-between"
+									>
+										<div className="flex min-w-0 items-center gap-2">
+											<Badge variant="lagoon" className="font-mono text-[10px]">
+												{log.action}
+											</Badge>
+											<span className="truncate font-medium text-foreground">{log.details}</span>
+										</div>
+										<div className="flex shrink-0 items-center gap-2 text-muted-foreground">
+											<span className="max-w-36 truncate">{log.actorEmail}</span>
+											<span>•</span>
+											<span className="whitespace-nowrap font-mono text-[11px]">
+												{new Date(log.timestamp).toLocaleTimeString([], {
+													hour: "2-digit",
+													minute: "2-digit",
+													second: "2-digit",
+												})}
+											</span>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
+					</CardContent>
+				</Card>
+			)}
 
 			<ProductFormModal open={formOpen} product={null} onOpenChange={(open) => setFormOpen(open)} />
 		</div>

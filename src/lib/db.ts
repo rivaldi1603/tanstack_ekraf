@@ -22,11 +22,26 @@ export interface UserRole {
 	role: Role;
 }
 
+export interface AuditLog {
+	id: string;
+	timestamp: string;
+	action:
+		| "PRODUCT_CREATED"
+		| "PRODUCT_UPDATED"
+		| "PRODUCT_DELETED"
+		| "USER_ROLE_UPDATED"
+		| "USER_DELETED"
+		| "ADMIN_SEEDED";
+	actorEmail: string;
+	actorRole: Role;
+	details: string;
+}
+
 /**
  * In-memory development database.
  *
  * better-auth owns the `user`, `session`, `account` and `verification` tables
- * (managed through `memoryAdapter`). This app adds `product` and `userRole`.
+ * (managed through `memoryAdapter`). This app adds `product`, `userRole` and `auditLog`.
  *
  * NOTE: this is memory only. Data survives within a single running server
  * process (local dev, or one warmed Vercel serverless instance) but is reset
@@ -50,10 +65,22 @@ const memoryDb = {
 	verification: [] as unknown[],
 	product: [] as Product[],
 	userRole: [] as UserRole[],
+	auditLog: [] as AuditLog[],
 };
 
 export const adapter = memoryAdapter(memoryDb);
 export const db = memoryDb;
+
+export function recordAuditLog(entry: Omit<AuditLog, "id" | "timestamp">) {
+	db.auditLog.unshift({
+		id: crypto.randomUUID(),
+		timestamp: new Date().toISOString(),
+		...entry,
+	});
+	if (db.auditLog.length > 50) {
+		db.auditLog.pop();
+	}
+}
 
 export { SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD } from "./demo-credentials";
 

@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { auth } from "#/lib/auth";
 import {
-	checkLoginRateLimit,
-	clearLoginFailures,
+	checkDualLoginRateLimit,
+	clearDualLoginFailures,
 	getClientIp,
-	recordLoginFailure,
+	recordDualLoginFailure,
 } from "#/lib/rate-limit";
 
 /**
@@ -29,14 +29,20 @@ async function handleAuthRequest(request: Request): Promise<Response> {
 	const url = new URL(request.url);
 
 	if (request.method === "POST" && url.pathname.includes("/sign-in/")) {
-		const key = `${getClientIp(request)}::${await readSubmittedEmail(request)}`;
-		const limit = checkLoginRateLimit(key);
+		const ip = getClientIp(request);
+		const email = await readSubmittedEmail(request);
+		const limit = checkDualLoginRateLimit(ip, email);
 
 		if (!limit.allowed) {
+			const reasonMessage =
+				limit.reason === "ip"
+					? "Too many failed login attempts from this network. Please wait a minute and try again."
+					: `Too many failed login attempts for this account. Please try again in ${limit.retryAfterSeconds} second(s).`;
+
 			return Response.json(
 				{
 					code: "TOO_MANY_REQUESTS",
-					message: `Too many failed login attempts. Please try again in ${limit.retryAfterSeconds} second(s).`,
+					message: reasonMessage,
 				},
 				{
 					status: 429,
@@ -47,9 +53,9 @@ async function handleAuthRequest(request: Request): Promise<Response> {
 
 		const response = await auth.handler(request);
 		if (response.status >= 400) {
-			recordLoginFailure(key);
+			recordDualLoginFailure(ip, email);
 		} else {
-			clearLoginFailures(key);
+			clearDualLoginFailures(ip, email);
 		}
 		return response;
 	}
