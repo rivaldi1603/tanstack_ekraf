@@ -12,6 +12,7 @@ import {
 	ArrowDownIcon,
 	ArrowUpDownIcon,
 	ArrowUpIcon,
+	EyeIcon,
 	PackageOpenIcon,
 	PencilIcon,
 	PlusIcon,
@@ -22,6 +23,7 @@ import {
 import { useMemo, useState } from "react";
 
 import ConfirmDialog from "@/components/ConfirmDialog";
+import ProductDetailModal from "@/components/ProductDetailModal";
 import ProductFormModal from "@/components/ProductFormModal";
 import ProductThumbnail from "@/components/ProductThumbnail";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +59,7 @@ function ProductsPage() {
 		open: false,
 		product: null,
 	});
+	const [detailProduct, setDetailProduct] = useState<Product | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [deleteError, setDeleteError] = useState("");
@@ -123,7 +126,18 @@ function ProductsPage() {
 			cell: (info) => {
 				const product = info.row.original;
 				if (!isAdmin) {
-					return <span className="block text-right text-xs text-muted-foreground">View only</span>;
+					return (
+						<div className="flex justify-end">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => setDetailProduct(product)}
+							>
+								<EyeIcon className="size-3.5" /> View details
+							</Button>
+						</div>
+					);
 				}
 				return (
 					<div className="flex items-center justify-end gap-1">
@@ -131,10 +145,18 @@ function ProductsPage() {
 							type="button"
 							variant="ghost"
 							size="sm"
+							onClick={() => setDetailProduct(product)}
+							title="View details"
+						>
+							<EyeIcon className="size-3.5" /> View
+						</Button>
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
 							onClick={() => setFormState({ open: true, product })}
 						>
-							<PencilIcon />
-							Edit
+							<PencilIcon className="size-3.5" /> Edit
 						</Button>
 						<Button
 							type="button"
@@ -146,8 +168,7 @@ function ProductsPage() {
 								setDeleteTarget(product);
 							}}
 						>
-							<Trash2Icon />
-							Delete
+							<Trash2Icon className="size-3.5" /> Delete
 						</Button>
 					</div>
 				);
@@ -346,29 +367,42 @@ function ProductsPage() {
 														{status.label} · {product.stock}
 													</Badge>
 												</div>
-												<div className={`mt-3 flex gap-2${isAdmin ? "" : " hidden"}`}>
+												<div className="mt-3 flex flex-wrap gap-2">
 													<Button
 														type="button"
 														variant="outline"
 														size="sm"
-														onClick={() => setFormState({ open: true, product })}
+														className={isAdmin ? "" : "w-full"}
+														onClick={() => setDetailProduct(product)}
 													>
-														<PencilIcon />
-														Edit
+														<EyeIcon className="size-3.5" /> View details
 													</Button>
-													<Button
-														type="button"
-														variant="outline"
-														size="sm"
-														className="text-destructive"
-														onClick={() => {
-															setDeleteError("");
-															setDeleteTarget(product);
-														}}
-													>
-														<Trash2Icon />
-														Delete
-													</Button>
+													{isAdmin && (
+														<>
+															<Button
+																type="button"
+																variant="outline"
+																size="sm"
+																onClick={() => setFormState({ open: true, product })}
+															>
+																<PencilIcon className="size-3.5" />
+																Edit
+															</Button>
+															<Button
+																type="button"
+																variant="outline"
+																size="sm"
+																className="text-destructive hover:text-destructive"
+																onClick={() => {
+																	setDeleteError("");
+																	setDeleteTarget(product);
+																}}
+															>
+																<Trash2Icon className="size-3.5" />
+																Delete
+															</Button>
+														</>
+													)}
 												</div>
 											</div>
 										</CardContent>
@@ -378,6 +412,19 @@ function ProductsPage() {
 						</div>
 					</>
 				))}
+
+			<ProductDetailModal
+				open={Boolean(detailProduct)}
+				product={detailProduct}
+				isAdmin={isAdmin}
+				onOpenChange={(open) => {
+					if (!open) setDetailProduct(null);
+				}}
+				onEdit={(prod) => {
+					setDetailProduct(null);
+					setFormState({ open: true, product: prod });
+				}}
+			/>
 
 			<ProductFormModal
 				key={formState.product?.id ?? "new-product"}

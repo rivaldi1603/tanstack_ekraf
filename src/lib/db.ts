@@ -31,6 +31,7 @@ export interface AuditLog {
 		| "PRODUCT_DELETED"
 		| "USER_ROLE_UPDATED"
 		| "USER_DELETED"
+		| "USER_PROFILE_UPDATED"
 		| "ADMIN_SEEDED";
 	actorEmail: string;
 	actorRole: Role;

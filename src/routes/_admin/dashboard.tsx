@@ -3,6 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import {
 	BoxesIcon,
 	DollarSignIcon,
+	EyeIcon,
 	HistoryIcon,
 	LockIcon,
 	PackageIcon,
@@ -10,15 +11,19 @@ import {
 	RefreshCwIcon,
 	SparklesIcon,
 	TrendingUpIcon,
+	UserCheckIcon,
 	UsersIcon,
 } from "lucide-react";
 import { useState } from "react";
 
+import ProductDetailModal from "@/components/ProductDetailModal";
 import ProductFormModal from "@/components/ProductFormModal";
 import ProductThumbnail from "@/components/ProductThumbnail";
+import UserProfileModal from "@/components/UserProfileModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Product } from "@/lib/db";
 import { getAuditLogs } from "@/lib/server/audit";
 import { getProducts } from "@/lib/server/products";
 import { getUsers } from "@/lib/server/users";
@@ -51,6 +56,8 @@ function DashboardPage() {
 	});
 
 	const [formOpen, setFormOpen] = useState(false);
+	const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+	const [profileOpen, setProfileOpen] = useState(false);
 
 	const products = productsQuery.data ?? [];
 	const users = usersQuery.data ?? [];
@@ -125,14 +132,14 @@ function DashboardPage() {
 							tone="bg-amber-500/15 text-amber-600 dark:text-amber-400"
 						/>
 						<StatCard
-							label="Team"
-							value={isAdmin ? String(users.length) : "—"}
+							label={isAdmin ? "Team" : "Account Role"}
+							value={isAdmin ? String(users.length) : "Member"}
 							hint={
 								isAdmin
 									? `${adminCount} administrator${adminCount === 1 ? "" : "s"}`
-									: "Administrators only"
+									: "Standard User · Read-only"
 							}
-							icon={UsersIcon}
+							icon={isAdmin ? UsersIcon : UserCheckIcon}
 							tone="bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"
 						/>
 					</>
@@ -203,18 +210,33 @@ function DashboardPage() {
 												className="size-12 rounded-lg"
 											/>
 											<div className="min-w-0 flex-1">
-												<p className="truncate text-sm font-medium text-foreground">
+												<button
+													type="button"
+													onClick={() => setSelectedProduct(product)}
+													className="truncate text-left text-sm font-medium text-foreground hover:underline cursor-pointer block"
+												>
 													{product.name}
-												</p>
+												</button>
 												<p className="truncate text-xs text-muted-foreground">
 													{product.description}
 												</p>
 											</div>
-											<div className="flex shrink-0 flex-col items-end gap-1">
-												<span className="text-sm font-semibold text-foreground">
-													{formatCurrency(product.price)}
-												</span>
-												<Badge variant={status.variant}>{status.label}</Badge>
+											<div className="flex shrink-0 items-center gap-2">
+												<div className="flex flex-col items-end gap-1">
+													<span className="text-sm font-semibold text-foreground">
+														{formatCurrency(product.price)}
+													</span>
+													<Badge variant={status.variant}>{status.label}</Badge>
+												</div>
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon-sm"
+													onClick={() => setSelectedProduct(product)}
+													title="View details"
+												>
+													<EyeIcon className="size-4" />
+												</Button>
 											</div>
 										</li>
 									);
@@ -247,8 +269,17 @@ function DashboardPage() {
 						<Button asChild variant="outline" className="w-full justify-start">
 							<Link to="/products" className="no-underline">
 								<PackageIcon />
-								Manage products
+								{isAdmin ? "Manage products" : "Browse catalogue"}
 							</Link>
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							className="w-full justify-start"
+							onClick={() => setProfileOpen(true)}
+						>
+							<UsersIcon />
+							My profile & permissions
 						</Button>
 						{isAdmin ? (
 							<Button asChild variant="outline" className="w-full justify-start">
@@ -260,7 +291,7 @@ function DashboardPage() {
 						) : (
 							<div className="flex items-center gap-2 rounded-xl border border-dashed border-border px-4 py-2.5 text-xs text-muted-foreground">
 								<LockIcon className="size-4" />
-								User management requires an administrator.
+								User role management requires an administrator.
 							</div>
 						)}
 					</CardContent>
@@ -323,6 +354,26 @@ function DashboardPage() {
 					</CardContent>
 				</Card>
 			)}
+
+			<ProductDetailModal
+				open={Boolean(selectedProduct)}
+				product={selectedProduct}
+				isAdmin={isAdmin}
+				onOpenChange={(open) => {
+					if (!open) setSelectedProduct(null);
+				}}
+				onEdit={(_prod) => {
+					setSelectedProduct(null);
+					setFormOpen(true);
+				}}
+			/>
+
+			<UserProfileModal
+				open={profileOpen}
+				user={viewer.user}
+				role={viewer.role}
+				onOpenChange={setProfileOpen}
+			/>
 
 			<ProductFormModal open={formOpen} product={null} onOpenChange={(open) => setFormOpen(open)} />
 		</div>
