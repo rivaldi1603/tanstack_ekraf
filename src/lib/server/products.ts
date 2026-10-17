@@ -2,16 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { type Product, db } from "@/lib/db";
+import { productSchema, productUpdateSchema } from "@/lib/product-schema";
 import { requireAdmin, requireAuth } from "@/lib/session";
-
-export const productSchema = z.object({
-	name: z.string().min(1, "Name is required"),
-	description: z.string().min(1, "Description is required"),
-	price: z.coerce.number().min(0, "Price must be positive"),
-	stock: z.coerce.number().min(0, "Stock must be positive"),
-});
-
-export type ProductInput = z.infer<typeof productSchema>;
 
 // TanStack Start server functions support GET and POST only. Mutations use
 // POST and encode the intended action in the validator/body.
@@ -25,23 +17,22 @@ export const createProduct = createServerFn({ method: "POST" })
 	.handler(async ({ data }) => {
 		await requireAdmin();
 		const now = new Date().toISOString();
-		const product = {
+		const product: Product = {
 			id: crypto.randomUUID(),
-			...data,
+			name: data.name,
+			description: data.description,
+			price: data.price,
+			stock: data.stock,
+			...(data.image ? { image: data.image } : {}),
 			createdAt: now,
 			updatedAt: now,
-		} as Product;
+		};
 		db.product.push(product);
 		return product;
 	});
 
 export const updateProduct = createServerFn({ method: "POST" })
-	.validator(
-		z.object({
-			id: z.string(),
-			...productSchema.shape,
-		}),
-	)
+	.validator(productUpdateSchema)
 	.handler(async ({ data }) => {
 		await requireAdmin();
 		const index = db.product.findIndex((p) => p.id === data.id);
@@ -51,20 +42,21 @@ export const updateProduct = createServerFn({ method: "POST" })
 			throw err;
 		}
 		const now = new Date().toISOString();
-		const updated = {
+		const updated: Product = {
 			...db.product[index],
 			name: data.name,
 			description: data.description,
 			price: data.price,
 			stock: data.stock,
+			image: data.image,
 			updatedAt: now,
-		} as Product;
+		};
 		db.product[index] = updated;
 		return updated;
 	});
 
 export const deleteProduct = createServerFn({ method: "POST" })
-	.validator(z.object({ id: z.string() }))
+	.validator(z.object({ id: z.string().min(1, "Product id is required") }))
 	.handler(async ({ data }) => {
 		await requireAdmin();
 		const index = db.product.findIndex((p) => p.id === data.id);

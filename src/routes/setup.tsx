@@ -1,84 +1,213 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import {
+	ArrowRightIcon,
+	CheckCircle2Icon,
+	DatabaseIcon,
+	KeyRoundIcon,
+	Loader2Icon,
+	MailIcon,
+	RefreshCwIcon,
+	ShieldCheckIcon,
+	TriangleAlertIcon,
+} from "lucide-react";
 import { useState } from "react";
 
+import PublicLayout from "@/components/PublicLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD } from "@/lib/demo-credentials";
 import { seedAdmin } from "@/lib/server/auth";
+import type { SeedResult } from "@/lib/server/auth";
 
-export const Route = createFileRoute("/setup")({ component: Setup });
+export const Route = createFileRoute("/setup")({
+	component: SetupPage,
+});
 
-function Setup() {
+const STEPS = [
+	"Run the seed — it creates the administrator and three sample products.",
+	"Sign in with the demo credentials below.",
+	"Add, edit and delete products, or promote teammates to administrators.",
+] as const;
+
+function SetupPage() {
 	const seedAdminFn = useServerFn(seedAdmin);
 	const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 	const [message, setMessage] = useState("");
+	const [result, setResult] = useState<SeedResult | null>(null);
 
 	const handleSeed = async () => {
 		setStatus("loading");
 		setMessage("");
 		try {
-			const result = await seedAdminFn();
+			const seedResult = await seedAdminFn();
+			setResult(seedResult);
 			setStatus("success");
-			setMessage(
-				result.alreadySeeded
-					? "Admin account already exists."
-					: "Admin account seeded. Sign in at /demo/better-auth with admin@example.com / admin12345",
-			);
-		} catch (err) {
+			setMessage(seedResult.message);
+		} catch (error) {
+			setResult(null);
 			setStatus("error");
-			setMessage(err instanceof Error ? err.message : "Seed failed");
+			setMessage(error instanceof Error ? error.message : "Seeding failed. Please try again.");
 		}
 	};
 
 	return (
-		<main className="page-wrap px-4 py-12">
-			<section className="island-shell rounded-2xl p-6 sm:p-8">
-				<p className="island-kicker mb-2">Setup</p>
-				<h1 className="display-title mb-3 text-4xl font-bold text-[var(--sea-ink)] sm:text-5xl">
-					Seed Admin Account
-				</h1>
-				<p className="m-0 max-w-2xl text-base leading-8 text-[var(--sea-ink-soft)]">
-					This creates the administrator account (password is hashed by Better Auth) and seeds
-					sample products. Run this once after deploying.
-				</p>
-
-				<div className="mt-8">
-					<button
-						type="button"
-						onClick={handleSeed}
-						disabled={status === "loading"}
-						className="rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-5 py-3 text-sm font-semibold text-[var(--sea-ink)] no-underline transition hover:bg-[var(--link-bg-hover)] disabled:opacity-50"
-					>
-						{status === "loading" ? "Seeding..." : "Seed Admin Account"}
-					</button>
-
-					{status !== "idle" && (
-						<div className="mt-4 p-4 rounded-xl bg-[var(--chip-bg)] border border-[var(--line)]">
-							<p
-								className={`m-0 text-sm ${
-									status === "success"
-										? "text-green-700 dark:text-green-400"
-										: status === "error"
-											? "text-red-700 dark:text-red-400"
-											: "text-[var(--sea-ink-soft)]"
-								}`}
-							>
-								{message}
-							</p>
-						</div>
-					)}
-
-					<div className="mt-6">
-						<p className="m-0 text-sm text-[var(--sea-ink-soft)]">
-							Already have an account?{" "}
-							<Link
-								to="/demo/better-auth"
-								className="underline underline-offset-4 font-medium hover:text-[var(--sea-ink)]"
-							>
-								Sign in
-							</Link>
+		<PublicLayout>
+			<main className="page-wrap px-4 py-12">
+				<div className="mx-auto max-w-4xl space-y-6">
+					<div>
+						<p className="island-kicker mb-1">Setup</p>
+						<h1 className="display-title text-3xl font-bold text-foreground sm:text-4xl">
+							Seed the admin account
+						</h1>
+						<p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+							This project has no database by design — data lives in memory for the life of the
+							server process. Run the seed once after every deploy or restart. It is safe to click
+							repeatedly: it never creates a second administrator or duplicate products.
 						</p>
 					</div>
+
+					<div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<DatabaseIcon className="size-4 text-[color:var(--lagoon-deep)]" />
+									One-time seed
+								</CardTitle>
+								<CardDescription>
+									Creates <strong>admin@example.com</strong> with a hashed password and three sample
+									products.
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-4">
+								<Button
+									type="button"
+									size="lg"
+									className="w-full"
+									disabled={status === "loading"}
+									onClick={() => void handleSeed()}
+								>
+									{status === "loading" ? (
+										<>
+											<Loader2Icon className="animate-spin" />
+											Seeding…
+										</>
+									) : (
+										<>
+											<DatabaseIcon />
+											{result ? "Run seed again" : "Seed admin account"}
+										</>
+									)}
+								</Button>
+
+								{status !== "idle" && message && (
+									<div
+										className={`flex items-start gap-2 rounded-xl border p-3 text-sm ${
+											status === "success"
+												? "border-[color:var(--palm)]/30 bg-[color:var(--palm)]/10 text-[color:var(--palm)]"
+												: status === "error"
+													? "border-destructive/30 bg-destructive/10 text-destructive"
+													: "border-border bg-muted/40 text-muted-foreground"
+										}`}
+									>
+										{status === "success" ? (
+											<CheckCircle2Icon className="mt-0.5 size-4 shrink-0" />
+										) : (
+											<TriangleAlertIcon className="mt-0.5 size-4 shrink-0" />
+										)}
+										<div>
+											<p className="font-medium">{message}</p>
+											{result && (
+												<p className="mt-1 text-xs opacity-90">
+													{result.alreadySeeded
+														? `${result.productCount} product(s) already in the catalogue.`
+														: `Catalogue now contains ${result.productCount} product(s).`}
+												</p>
+											)}
+										</div>
+									</div>
+								)}
+
+								<ol className="space-y-3">
+									{STEPS.map((step, index) => (
+										<li key={step} className="flex gap-3 text-sm text-muted-foreground">
+											<span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--lagoon)]/15 text-xs font-bold text-[color:var(--lagoon-deep)]">
+												{index + 1}
+											</span>
+											<span>{step}</span>
+										</li>
+									))}
+								</ol>
+
+								<div className="flex flex-wrap gap-2">
+									<Button asChild>
+										<Link to="/login" className="no-underline">
+											Go to sign in
+											<ArrowRightIcon />
+										</Link>
+									</Button>
+									<Button asChild variant="outline">
+										<Link to="/dashboard" className="no-underline">
+											Open dashboard
+										</Link>
+									</Button>
+								</div>
+							</CardContent>
+						</Card>
+
+						<div className="space-y-4">
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center justify-between gap-2">
+										<span className="flex items-center gap-2">
+											<ShieldCheckIcon className="size-4 text-[color:var(--palm)]" />
+											Demo credentials
+										</span>
+										<Badge variant="muted">Development only</Badge>
+									</CardTitle>
+									<CardDescription>
+										Public demo values — never reuse them in production.
+									</CardDescription>
+								</CardHeader>
+								<CardContent className="space-y-3">
+									<div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-3">
+										<MailIcon className="size-4 shrink-0 text-muted-foreground" />
+										<div className="min-w-0">
+											<p className="text-xs text-muted-foreground">Email</p>
+											<p className="truncate text-sm font-medium text-foreground">
+												{SEED_ADMIN_EMAIL}
+											</p>
+										</div>
+									</div>
+									<div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-3">
+										<KeyRoundIcon className="size-4 shrink-0 text-muted-foreground" />
+										<div className="min-w-0">
+											<p className="text-xs text-muted-foreground">Password</p>
+											<p className="truncate text-sm font-medium text-foreground">
+												{SEED_ADMIN_PASSWORD}
+											</p>
+										</div>
+									</div>
+								</CardContent>
+							</Card>
+
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<RefreshCwIcon className="size-4 text-muted-foreground" />
+										Reminder
+									</CardTitle>
+									<CardDescription>
+										In-memory data resets on redeploy or a cold start, so re-run this seed whenever
+										the catalogue looks empty.
+									</CardDescription>
+								</CardHeader>
+							</Card>
+						</div>
+					</div>
 				</div>
-			</section>
-		</main>
+			</main>
+		</PublicLayout>
 	);
 }

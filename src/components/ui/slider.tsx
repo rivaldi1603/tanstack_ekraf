@@ -17,6 +17,19 @@ function Slider({
 		[value, defaultValue, min, max],
 	);
 
+	// Stable, unique keys per thumb. Two thumbs can legally share the same value
+	// (e.g. a collapsed range), so the value alone is not unique — we suffix the
+	// n-th occurrence of a value.
+	const _thumbKeys = React.useMemo(() => {
+		const seen = new Map<string, number>();
+		return _values.map((thumbValue) => {
+			const base = String(thumbValue);
+			const occurrence = (seen.get(base) ?? 0) + 1;
+			seen.set(base, occurrence);
+			return `thumb-${base}-${occurrence}`;
+		});
+	}, [_values]);
+
 	return (
 		<SliderPrimitive.Root
 			data-slot="slider"
@@ -43,10 +56,10 @@ function Slider({
 					)}
 				/>
 			</SliderPrimitive.Track>
-			{Array.from({ length: _values.length }, (_, index) => (
+			{_thumbKeys.map((thumbKey) => (
 				<SliderPrimitive.Thumb
 					data-slot="slider-thumb"
-					key={index}
+					key={thumbKey}
 					className="block size-4 shrink-0 rounded-full border border-primary bg-white shadow-sm ring-ring/50 transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
 				/>
 			))}

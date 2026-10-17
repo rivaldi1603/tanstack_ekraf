@@ -1,3 +1,7 @@
+"use client";
+
+import { cn } from "cn";
+import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type ThemeMode = "light" | "dark" | "auto";
@@ -31,7 +35,7 @@ function applyThemeMode(mode: ThemeMode) {
 	document.documentElement.style.colorScheme = resolved;
 }
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ className }: { className?: string }) {
 	const [mode, setMode] = useState<ThemeMode>("auto");
 
 	useEffect(() => {
@@ -63,8 +67,10 @@ export default function ThemeToggle() {
 
 	const label =
 		mode === "auto"
-			? "Theme mode: auto (system). Click to switch to light mode."
-			: `Theme mode: ${mode}. Click to switch mode.`;
+			? "Theme: auto (follows system). Click for light mode."
+			: `Theme: ${mode}. Click to switch mode.`;
+
+	const Icon = mode === "light" ? SunIcon : mode === "dark" ? MoonIcon : MonitorIcon;
 
 	return (
 		<button
@@ -72,9 +78,12 @@ export default function ThemeToggle() {
 			onClick={toggleMode}
 			aria-label={label}
 			title={label}
-			className="rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm font-semibold text-[var(--sea-ink)] shadow-[0_8px_22px_rgba(30,90,72,0.08)] transition hover:-translate-y-0.5"
+			className={cn(
+				"inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+				className,
+			)}
 		>
-			{mode === "auto" ? "Auto" : mode === "dark" ? "Dark" : "Light"}
+			<Icon className="size-4" />
 		</button>
 	);
 }

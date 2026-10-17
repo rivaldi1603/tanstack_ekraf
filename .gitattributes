@@ -1,0 +1,10 @@
+# Normalise line endings to LF so Biome's formatter is stable on Windows checkouts.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary

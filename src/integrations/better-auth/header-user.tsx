@@ -1,33 +1,40 @@
 import { Link } from "@tanstack/react-router";
+import { LogOutIcon } from "lucide-react";
 import { authClient } from "#/lib/auth-client";
+import { getUserInitials } from "#/lib/types";
 
 export default function BetterAuthHeader() {
 	const { data: session, isPending } = authClient.useSession();
 
 	if (isPending) {
-		return <div className="h-8 w-8 bg-neutral-100 dark:bg-neutral-800 animate-pulse" />;
+		return <div className="h-9 w-28 animate-pulse rounded-xl bg-muted" />;
 	}
 
 	if (session?.user) {
+		const initials = getUserInitials({
+			name: session.user.name ?? null,
+			email: session.user.email,
+		});
+
 		return (
 			<div className="flex items-center gap-2">
-				{session.user.image ? (
-					<img src={session.user.image} alt="" className="h-8 w-8" />
-				) : (
-					<div className="h-8 w-8 bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-						<span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
-							{session.user.name?.charAt(0).toUpperCase() || "U"}
-						</span>
-					</div>
-				)}
+				<div className="hidden items-center gap-2 rounded-xl border border-border bg-card px-2.5 py-1.5 sm:flex">
+					<span className="flex size-6 items-center justify-center rounded-full bg-[color:var(--lagoon)]/20 text-[10px] font-bold text-[color:var(--lagoon-deep)]">
+						{initials}
+					</span>
+					<span className="max-w-40 truncate text-xs font-medium text-foreground">
+						{session.user.email}
+					</span>
+				</div>
 				<button
 					type="button"
 					onClick={() => {
 						void authClient.signOut();
 					}}
-					className="flex-1 h-9 px-4 text-sm font-medium bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+					className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border bg-background px-3 text-sm font-medium text-foreground transition hover:bg-accent"
 				>
-					Sign out
+					<LogOutIcon className="size-4" />
+					<span className="hidden sm:inline">Sign out</span>
 				</button>
 			</div>
 		);
@@ -35,8 +42,8 @@ export default function BetterAuthHeader() {
 
 	return (
 		<Link
-			to="/demo/better-auth"
-			className="h-9 px-4 text-sm font-medium bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors inline-flex items-center"
+			to="/login"
+			className="inline-flex h-9 items-center rounded-xl bg-[color:var(--sea-ink)] px-4 text-sm font-semibold text-[color:var(--foam)] no-underline transition hover:opacity-90"
 		>
 			Sign in
 		</Link>
