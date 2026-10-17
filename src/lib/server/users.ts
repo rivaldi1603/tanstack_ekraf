@@ -2,7 +2,17 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { db, getUserRole, recordAuditLog, removeUserRole, setUserRole } from "@/lib/db";
-import { requireAdmin } from "@/lib/session";
+import { sanitizeText } from "@/lib/product-schema";
+import { requireAdmin, requireAuth } from "@/lib/session";
+
+export const updateProfileSchema = z.object({
+	name: z
+		.string()
+		.trim()
+		.min(1, "Name is required")
+		.max(100, "Name is too long")
+		.transform(sanitizeText),
+});
 
 export const userRoleSchema = z.object({
 	userId: z.string().min(1, "User id is required"),
@@ -97,4 +107,29 @@ export const deleteUser = createServerFn({ method: "POST" })
 			details: `Deleted user ${target?.email ?? data.userId}`,
 		});
 		return { ok: true };
+	});
+
+export const updateCurrentUserProfile = createServerFn({ method: "POST" })
+	.validator(updateProfileSchema)
+	.handler(async ({ data }) => {
+		const { user } = await requireAuth();
+		const existing = db.user.find((u) => u.id === user.id);
+		if (!existing) {
+			const err = new Error("User account not found") as Error & { status?: number };
+			err.status = 404;
+			throw err;
+		}
+
+		const previousName = existing.name;
+		existing.name = data.name;
+		existing.updatedAt = new Date();
+
+		recordAuditLog({
+			action: "USER_PROFILE_UPDATED",
+			actorEmail: user.email,
+			actorRole: getUserRole(user.id),
+			details: `Updated profile name from "${previousName ?? "none"}" to "${data.name}"`,
+		});
+
+		return { ok: true, name: data.name };
 	});

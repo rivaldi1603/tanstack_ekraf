@@ -11,6 +11,7 @@ import { cn } from "cn";
 import {
 	HomeIcon,
 	LayoutDashboardIcon,
+	LockIcon,
 	LogOutIcon,
 	MenuIcon,
 	PackageIcon,
@@ -23,6 +24,7 @@ import {
 import { useEffect, useState } from "react";
 
 import ThemeToggle from "@/components/ThemeToggle";
+import UserProfileModal from "@/components/UserProfileModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
@@ -43,7 +45,7 @@ export const Route = createFileRoute("/_admin")({
 const NAV_ITEMS = [
 	{ to: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
 	{ to: "/products", label: "Products", icon: PackageIcon },
-	{ to: "/users", label: "Users", icon: UsersIcon },
+	{ to: "/users", label: "Users", icon: UsersIcon, adminOnly: true },
 	{ to: "/setup", label: "Setup", icon: SparklesIcon },
 	{ to: "/", label: "Home", icon: HomeIcon },
 ] as const;
@@ -59,6 +61,7 @@ function DashboardShell() {
 	const [collapsed, setCollapsed] = useState(false);
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [signingOut, setSigningOut] = useState(false);
+	const [profileOpen, setProfileOpen] = useState(false);
 
 	useEffect(() => {
 		setCollapsed(window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "collapsed");
@@ -145,6 +148,7 @@ function DashboardShell() {
 					{NAV_ITEMS.map((item) => {
 						const isActive = activeItem?.to === item.to;
 						const Icon = item.icon;
+						const isRestricted = "adminOnly" in item && item.adminOnly && viewer.role !== "admin";
 						return (
 							<Link
 								key={item.to}
@@ -160,18 +164,33 @@ function DashboardShell() {
 								)}
 							>
 								<Icon className="size-5 shrink-0" />
-								<span className={cn("truncate", collapsed && "lg:hidden")}>{item.label}</span>
+								<span
+									className={cn(
+										"truncate flex-1 flex items-center justify-between",
+										collapsed && "lg:hidden",
+									)}
+								>
+									<span>{item.label}</span>
+									{isRestricted && (
+										<span className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+											<LockIcon className="size-2.5" /> Admin
+										</span>
+									)}
+								</span>
 							</Link>
 						);
 					})}
 				</nav>
 
 				<div className="shrink-0 space-y-3 border-t border-border p-3">
-					<div
+					<button
+						type="button"
+						onClick={() => setProfileOpen(true)}
 						className={cn(
-							"flex items-center gap-2 rounded-xl bg-muted/60 p-2",
+							"flex w-full items-center gap-2 rounded-xl bg-muted/60 p-2 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer",
 							collapsed && "lg:justify-center",
 						)}
+						title="View account profile and permissions"
 					>
 						<div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--palm)]/20 text-xs font-bold text-[color:var(--palm)]">
 							{initials}
@@ -188,7 +207,7 @@ function DashboardShell() {
 						>
 							{roleLabel}
 						</Badge>
-					</div>
+					</button>
 
 					<div className={cn("flex items-center gap-2", collapsed && "lg:flex-col")}>
 						<ThemeToggle />
@@ -245,7 +264,14 @@ function DashboardShell() {
 					</div>
 
 					<div className="ml-auto flex items-center gap-2">
-						<Badge variant={viewer.role === "admin" ? "default" : "muted"}>{roleLabel}</Badge>
+						<button
+							type="button"
+							onClick={() => setProfileOpen(true)}
+							className="cursor-pointer transition hover:opacity-80"
+							title="View account profile and permissions"
+						>
+							<Badge variant={viewer.role === "admin" ? "default" : "muted"}>{roleLabel}</Badge>
+						</button>
 						<ThemeToggle className="hidden sm:inline-flex" />
 					</div>
 				</header>
@@ -254,6 +280,13 @@ function DashboardShell() {
 					<Outlet />
 				</main>
 			</div>
+
+			<UserProfileModal
+				open={profileOpen}
+				user={viewer.user}
+				role={viewer.role}
+				onOpenChange={setProfileOpen}
+			/>
 		</div>
 	);
 }

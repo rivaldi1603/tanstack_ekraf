@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import UserProfileModal from "@/components/UserProfileModal";
 import UserRoleModal from "@/components/UserRoleModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ function UsersPage() {
 
 	const [search, setSearch] = useState("");
 	const [selected, setSelected] = useState<UserRow | null>(null);
+	const [profileOpen, setProfileOpen] = useState(false);
 
 	const users = usersQuery.data ?? [];
 	const adminCount = users.filter((user) => user.role === "admin").length;
@@ -153,18 +155,60 @@ function UsersPage() {
 			</div>
 
 			{!isAdmin ? (
-				<Card>
-					<CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-						<LockIcon className="size-10 text-muted-foreground" />
-						<div>
-							<p className="text-sm font-semibold text-foreground">Administrators only</p>
-							<p className="mt-1 text-xs text-muted-foreground">
-								Your account does not have permission to manage users. Ask an administrator for
-								access.
-							</p>
-						</div>
-					</CardContent>
-				</Card>
+				<div className="grid gap-6 md:grid-cols-2">
+					<Card>
+						<CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+							<div className="flex size-12 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+								<LockIcon className="size-6" />
+							</div>
+							<div>
+								<p className="text-base font-semibold text-foreground">Administrators Only</p>
+								<p className="mt-1 text-xs text-muted-foreground max-w-sm">
+									Member management, role assignments, and account deletions are restricted to
+									workspace administrators.
+								</p>
+							</div>
+						</CardContent>
+					</Card>
+
+					<Card>
+						<CardContent className="space-y-4 py-6">
+							<div className="flex items-center justify-between border-b border-border pb-3">
+								<h3 className="text-sm font-semibold text-foreground">Your Account Profile</h3>
+								<Badge variant="muted">
+									<UserIcon className="size-3" /> Standard Member
+								</Badge>
+							</div>
+							<div className="flex items-center gap-3">
+								<div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--lagoon)]/20 text-sm font-bold text-[color:var(--lagoon-deep)]">
+									{viewer.user
+										? getUserInitials({ name: viewer.user.name, email: viewer.user.email })
+										: "U"}
+								</div>
+								<div className="min-w-0 flex-1">
+									<p className="truncate text-sm font-semibold text-foreground">
+										{viewer.user?.name || viewer.user?.email}
+									</p>
+									<p className="truncate text-xs text-muted-foreground">{viewer.user?.email}</p>
+								</div>
+							</div>
+							<div className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
+								<p className="font-medium text-foreground">Workspace Permissions:</p>
+								<p>• Catalogue access: Read-only (Browse products & stock)</p>
+								<p>• Dashboard: Overview KPIs and product catalogue metrics</p>
+							</div>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="w-full"
+								onClick={() => setProfileOpen(true)}
+							>
+								<Settings2Icon /> Edit Profile Display Name
+							</Button>
+						</CardContent>
+					</Card>
+				</div>
 			) : (
 				<>
 					<div className="relative max-w-sm">
@@ -345,6 +389,13 @@ function UsersPage() {
 					/>
 				</>
 			)}
+
+			<UserProfileModal
+				open={profileOpen}
+				user={viewer.user}
+				role={viewer.role}
+				onOpenChange={setProfileOpen}
+			/>
 		</div>
 	);
 }
