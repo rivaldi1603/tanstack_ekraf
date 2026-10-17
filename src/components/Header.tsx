@@ -14,16 +14,16 @@ const NAV_LINKS = [
 
 export default function Header() {
 	return (
-		<header className="sticky top-0 z-30 border-b border-border bg-background/80 px-4 backdrop-blur-lg">
+		<header className="sticky top-0 z-30 border-b border-border/60 bg-background/60 px-4 backdrop-blur-xl">
 			<nav className="page-wrap flex items-center gap-3 py-3">
 				<Link
 					to="/"
-					className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-semibold text-foreground no-underline shadow-sm"
+					className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border/70 bg-card/80 px-3 py-1.5 text-sm font-semibold text-foreground no-underline shadow-sm transition hover:border-teal-500/40"
 				>
-					<span className="flex size-6 items-center justify-center rounded-full bg-[color:var(--lagoon)]/20 text-[color:var(--lagoon-deep)]">
+					<span className="flex size-6 items-center justify-center rounded-full bg-gradient-to-tr from-teal-500 via-cyan-500 to-indigo-600 text-white shadow-[0_0_12px_rgba(20,184,166,0.45)]">
 						<SparklesIcon className="size-3.5" />
 					</span>
-					Ekraf Admin
+					Ekraf <span className="aurora-gradient-text">Admin</span>
 				</Link>
 
 				<div className="hidden items-center gap-1 md:flex">

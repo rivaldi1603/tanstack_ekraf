@@ -71,16 +71,28 @@ function DashboardPage() {
 		<div className="mx-auto w-full max-w-6xl space-y-6">
 			<div className="flex flex-wrap items-end justify-between gap-4">
 				<div>
-					<p className="island-kicker mb-1">Overview</p>
+					<p className="island-kicker mb-1 flex items-center gap-1.5">
+						<span className="inline-block size-2 rounded-full bg-teal-400 shadow-[0_0_8px_#14b8a6] animate-pulse" />
+						<span className="aurora-gradient-text">Workspace Overview</span>
+					</p>
 					<h1 className="display-title text-3xl font-bold text-foreground sm:text-4xl">
-						Welcome back{viewer.user?.name ? `, ${viewer.user.name}` : ""}
+						Welcome back
+						{viewer.user?.name ? (
+							<span className="aurora-gradient-text">, {viewer.user.name}</span>
+						) : (
+							""
+						)}
 					</h1>
 					<p className="mt-1 max-w-2xl text-sm text-muted-foreground">
 						Every write is validated and authorised on the server before it touches your data.
 					</p>
 				</div>
 				{isAdmin && (
-					<Button type="button" onClick={() => setFormOpen(true)}>
+					<Button
+						type="button"
+						className="bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:opacity-95 transition-all"
+						onClick={() => setFormOpen(true)}
+					>
 						<PlusIcon />
 						Add product
 					</Button>
@@ -394,7 +406,7 @@ function StatCard({
 	tone: string;
 }) {
 	return (
-		<Card>
+		<Card className="aurora-card-glow relative overflow-hidden border-border/70">
 			<CardContent className="flex items-start justify-between gap-3">
 				<div className="min-w-0">
 					<p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
@@ -403,7 +415,9 @@ function StatCard({
 					<p className="mt-1 truncate text-2xl font-bold text-foreground">{value}</p>
 					<p className="mt-1 text-xs text-muted-foreground">{hint}</p>
 				</div>
-				<span className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${tone}`}>
+				<span
+					className={`flex size-10 shrink-0 items-center justify-center rounded-xl shadow-sm ${tone}`}
+				>
 					<Icon className="size-5" />
 				</span>
 			</CardContent>

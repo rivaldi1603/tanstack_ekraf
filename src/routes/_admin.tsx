@@ -103,7 +103,7 @@ function DashboardShell() {
 	const roleLabel = viewer.role === "admin" ? "Admin" : "User";
 
 	return (
-		<div className="min-h-screen bg-background">
+		<div className="min-h-screen bg-transparent">
 			{mobileOpen && (
 				<button
 					type="button"
@@ -115,22 +115,20 @@ function DashboardShell() {
 
 			<aside
 				className={cn(
-					// `invisible` (not just an off-screen transform) keeps the closed mobile
-					// drawer out of the accessibility tree and the tab order. `lg:visible`
-					// restores it as the permanent desktop sidebar. Visibility is part of the
-					// transition so the drawer still slides in and out.
-					"fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-border bg-card transition-[transform,visibility] duration-200 lg:visible lg:translate-x-0",
+					"fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-border/60 bg-card/75 backdrop-blur-xl transition-[transform,visibility] duration-200 lg:visible lg:translate-x-0 shadow-lg lg:shadow-none",
 					collapsed ? "lg:w-20" : "lg:w-64",
 					mobileOpen ? "visible translate-x-0" : "invisible -translate-x-full",
 				)}
 			>
-				<div className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4">
-					<div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[color:var(--lagoon)]/20 text-[color:var(--lagoon-deep)]">
+				<div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-border/60 px-4">
+					<div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-teal-500 via-cyan-500 to-indigo-600 text-white shadow-[0_0_16px_rgba(20,184,166,0.4)]">
 						<SparklesIcon className="size-5" />
 					</div>
 					<div className={cn("min-w-0", collapsed && "lg:hidden")}>
-						<p className="truncate text-sm font-bold tracking-tight text-foreground">Ekraf Admin</p>
-						<p className="truncate text-[11px] text-muted-foreground">Dashboard</p>
+						<p className="truncate text-sm font-bold tracking-tight text-foreground">
+							Ekraf <span className="aurora-gradient-text">Admin</span>
+						</p>
+						<p className="truncate text-[11px] text-muted-foreground">Workspace</p>
 					</div>
 					<Button
 						type="button"
@@ -158,8 +156,8 @@ function DashboardShell() {
 								className={cn(
 									"flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium no-underline transition",
 									isActive
-										? "bg-[color:var(--lagoon)]/15 text-[color:var(--sea-ink)]"
-										: "text-muted-foreground hover:bg-accent hover:text-foreground",
+										? "bg-gradient-to-r from-teal-500/20 via-cyan-500/15 to-indigo-500/15 text-foreground font-semibold border-l-2 border-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.15)]"
+										: "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
 									collapsed && "lg:justify-center lg:px-0",
 								)}
 							>
@@ -234,7 +232,7 @@ function DashboardShell() {
 					collapsed ? "lg:pl-20" : "lg:pl-64",
 				)}
 			>
-				<header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur-lg sm:px-6">
+				<header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/60 bg-background/60 px-4 backdrop-blur-xl sm:px-6">
 					<Button
 						type="button"
 						variant="ghost"

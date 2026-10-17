@@ -63,14 +63,17 @@ function SetupPage() {
 			<main className="page-wrap px-4 py-12">
 				<div className="mx-auto max-w-4xl space-y-6">
 					<div>
-						<p className="island-kicker mb-1">Setup</p>
+						<p className="island-kicker mb-1 flex items-center gap-1.5">
+							<span className="inline-block size-2 rounded-full bg-teal-400 shadow-[0_0_8px_#14b8a6] animate-pulse" />
+							<span className="aurora-gradient-text">Initialization & Demo</span>
+						</p>
 						<h1 className="display-title text-3xl font-bold text-foreground sm:text-4xl">
-							Seed the admin account
+							Seed Demo Accounts
 						</h1>
 						<p className="mt-2 max-w-2xl text-sm text-muted-foreground">
 							This project has no database by design — data lives in memory for the life of the
 							server process. Run the seed once after every deploy or restart. It is safe to click
-							repeatedly: it never creates a second administrator or duplicate products.
+							repeatedly: it never creates duplicate accounts or products.
 						</p>
 					</div>
 
@@ -82,15 +85,15 @@ function SetupPage() {
 									One-time seed
 								</CardTitle>
 								<CardDescription>
-									Creates <strong>admin@example.com</strong> with a hashed password and three sample
-									products.
+									Creates <strong>admin@example.com</strong> (Admin),{" "}
+									<strong>user@example.com</strong> (Standard User), and sample products.
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
 								<Button
 									type="button"
 									size="lg"
-									className="w-full"
+									className="w-full bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 text-white shadow-[0_0_24px_rgba(20,184,166,0.3)] hover:opacity-95 transition-all"
 									disabled={status === "loading"}
 									onClick={() => void handleSeed()}
 								>

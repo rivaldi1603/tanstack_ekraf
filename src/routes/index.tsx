@@ -84,12 +84,13 @@ function HomePage() {
 			<section className="border-b border-border">
 				<div className="page-wrap grid gap-10 px-4 py-14 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:py-20">
 					<div className="rise-in">
-						<Badge variant="lagoon" className="mb-4">
+						<Badge variant="aurora" className="mb-4">
 							<SparklesIcon />
 							Ekraf creative economy admin
 						</Badge>
 						<h1 className="display-title text-4xl leading-[1.1] font-bold text-foreground sm:text-5xl lg:text-6xl">
-							Run your catalogue and your team from one clean dashboard.
+							Run your catalogue and your team from one{" "}
+							<span className="aurora-gradient-text">clean dashboard</span>.
 						</h1>
 						<p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">
 							A secure admin workspace for creative economy products and people — built on TanStack
@@ -98,14 +99,22 @@ function HomePage() {
 
 						<div className="mt-8 flex flex-wrap gap-3">
 							{session?.user ? (
-								<Button asChild size="lg">
+								<Button
+									asChild
+									size="lg"
+									className="bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 text-white shadow-[0_0_24px_rgba(20,184,166,0.35)] hover:opacity-95 transition-all"
+								>
 									<Link to="/dashboard" className="no-underline">
 										Open dashboard
 										<ArrowRightIcon />
 									</Link>
 								</Button>
 							) : (
-								<Button asChild size="lg">
+								<Button
+									asChild
+									size="lg"
+									className="bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 text-white shadow-[0_0_24px_rgba(20,184,166,0.35)] hover:opacity-95 transition-all"
+								>
 									<Link to="/login" className="no-underline">
 										Sign in
 										<ArrowRightIcon />
@@ -205,9 +214,9 @@ function HomePage() {
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 					{QUICK_ACTIONS.map((action) => (
 						<Link key={action.to} to={action.to} className="no-underline">
-							<Card className="feature-card h-full border-border/60 transition hover:-translate-y-0.5">
+							<Card className="feature-card aurora-card-glow h-full border-border/60">
 								<CardContent className="space-y-3">
-									<span className="flex size-10 items-center justify-center rounded-xl bg-[color:var(--lagoon)]/15 text-[color:var(--lagoon-deep)]">
+									<span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-tr from-teal-500/20 via-cyan-500/15 to-indigo-500/20 text-teal-600 dark:text-teal-300 shadow-sm">
 										<action.icon className="size-5" />
 									</span>
 									<div>

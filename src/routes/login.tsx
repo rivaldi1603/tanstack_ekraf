@@ -161,16 +161,18 @@ function LoginPage() {
 
 			<div className="w-full max-w-md">
 				<div className="mb-6 flex flex-col items-center text-center">
-					<span className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-[color:var(--lagoon)]/20 text-[color:var(--lagoon-deep)]">
+					<span className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-teal-500 via-cyan-500 to-indigo-600 text-white shadow-[0_0_24px_rgba(20,184,166,0.45)]">
 						<SparklesIcon className="size-6" />
 					</span>
-					<h1 className="display-title text-3xl font-bold text-foreground">Ekraf Admin</h1>
+					<h1 className="display-title text-3xl font-bold text-foreground">
+						Ekraf <span className="aurora-gradient-text">Admin</span>
+					</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
 						Sign in to manage products and your team.
 					</p>
 				</div>
 
-				<div className="island-shell rounded-2xl p-6 sm:p-7">
+				<div className="island-shell rounded-2xl p-6 sm:p-7 shadow-2xl relative overflow-hidden">
 					<div
 						className="mb-6 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/50 p-1"
 						role="tablist"
@@ -324,7 +326,11 @@ function LoginPage() {
 							</div>
 						)}
 
-						<Button type="submit" className="w-full" disabled={isLoading}>
+						<Button
+							type="submit"
+							className="w-full bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:opacity-95 transition-all"
+							disabled={isLoading}
+						>
 							{isLoading ? (
 								<>
 									<Loader2Icon className="animate-spin" />

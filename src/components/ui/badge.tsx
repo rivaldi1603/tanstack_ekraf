@@ -17,8 +17,11 @@ const badgeVariants = cva(
 				muted: "border-border bg-muted text-muted-foreground",
 				lagoon:
 					"border-[color:var(--lagoon)]/35 bg-[color:var(--lagoon)]/15 text-[color:var(--lagoon-deep)]",
+				aurora:
+					"border-teal-500/30 bg-gradient-to-r from-teal-500/15 via-cyan-500/15 to-indigo-500/15 text-teal-700 dark:text-teal-300 shadow-[0_0_12px_rgba(20,184,166,0.15)]",
 			},
 		},
+
 		defaultVariants: {
 			variant: "default",
 		},

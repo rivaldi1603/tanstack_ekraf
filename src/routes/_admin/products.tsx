@@ -204,14 +204,21 @@ function ProductsPage() {
 		<div className="mx-auto w-full max-w-6xl space-y-6">
 			<div className="flex flex-wrap items-end justify-between gap-4">
 				<div>
-					<p className="island-kicker mb-1">Catalogue</p>
+					<p className="island-kicker mb-1 flex items-center gap-1.5">
+						<span className="inline-block size-2 rounded-full bg-teal-400 shadow-[0_0_8px_#14b8a6] animate-pulse" />
+						<span className="aurora-gradient-text">Catalogue Management</span>
+					</p>
 					<h1 className="display-title text-3xl font-bold text-foreground sm:text-4xl">Products</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Create, edit and remove products. Cloud images and uploads are capped at 512×512px.
+						Browse, inspect specifications, and manage product inventory.
 					</p>
 				</div>
 				{isAdmin && (
-					<Button type="button" onClick={() => setFormState({ open: true, product: null })}>
+					<Button
+						type="button"
+						className="bg-gradient-to-r from-teal-500 via-cyan-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:opacity-95 transition-all"
+						onClick={() => setFormState({ open: true, product: null })}
+					>
 						<PlusIcon />
 						Add product
 					</Button>

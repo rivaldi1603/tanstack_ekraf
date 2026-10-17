@@ -147,7 +147,10 @@ function UsersPage() {
 	return (
 		<div className="mx-auto w-full max-w-6xl space-y-6">
 			<div>
-				<p className="island-kicker mb-1">Access control</p>
+				<p className="island-kicker mb-1 flex items-center gap-1.5">
+					<span className="inline-block size-2 rounded-full bg-teal-400 shadow-[0_0_8px_#14b8a6] animate-pulse" />
+					<span className="aurora-gradient-text">Access Control & Team</span>
+				</p>
 				<h1 className="display-title text-3xl font-bold text-foreground sm:text-4xl">Users</h1>
 				<p className="mt-1 text-sm text-muted-foreground">
 					Promote or demote members and remove accounts. Administrators only.
