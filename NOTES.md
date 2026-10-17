@@ -110,6 +110,15 @@ security.
 | Unauthenticated `fetch` to `updateUserRole` | `Unauthorized` (401) |
 | Non-admin `fetch` to `createProduct` | `Forbidden: admin required` (403) |
 | Sign out from the sidebar | redirects to `/login` with clean session invalidation |
+| Aurora Mesh Gradients | Verified across `/`, `/login`, `/dashboard`, `/products`, and `/users` in both light & dark themes with frosted glass cards |
+
+## Visual Design Overhaul: Aurora Mesh Gradients
+
+The application UI features a state-of-the-art Aurora / Mesh Gradient design system:
+- **Animated 5-stop Radial Mesh Canvas**: `body` renders vibrant, ambient radial gradients (teal `#14b8a6`, cyan `#06b6d4`, emerald `#10b981`, indigo `#6366f1`, violet `#8b5cf6`) with smooth slow-motion keyframe oscillation (`aurora-mesh-flow`) and high-tech stardust noise (`body::after`).
+- **Frosted Glassmorphism**: Cards (`<Card>`), modals, the sidebar (`DashboardShell`), and header utilize translucent background tokens (`bg-card/80`, `bg-background/60`) paired with hardware-accelerated backdrop blur (`backdrop-blur-md`, `backdrop-blur-xl`) and subtle glowing borders (`border-border/70`).
+- **Aurora Gradient Text & Badges**: Distinctive multi-tone gradient typography (`.aurora-gradient-text`) and glowing badges (`variant="aurora"`, `.aurora-glow-pill`) provide clear visual hierarchy.
+- **Dual-Theme Harmonization**: Both Light mode (crisp, translucent cyan/teal sheen) and Dark mode (deep midnight navy with neon aurora orbs) are fully supported with the instant theme toggle.
 
 ## Verification
 
@@ -120,4 +129,5 @@ bun run lint        # biome check → 0 errors, 0 warnings
 bun run build       # vite build → success
 bunx tsc --noEmit   # 0 type errors
 ```
+
 
